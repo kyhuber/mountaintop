@@ -24,6 +24,11 @@ The production-ready static files are written to `dist/`.
 
 ## Rules summary
 
+The one-card round is a blind call: see opponents' cards and trump, but keep
+your own card hidden until all bids are locked. Choose Mountaintop (zero) or
+one trick. Computer players use only the other players' cards and the public
+trump card to estimate their chances; they cannot use their own hidden card.
+
 - Every player predicts how many tricks they will win. A prediction of zero is
   called **Mountaintop**.
 - Players must follow the led suit when possible. The highest trump wins; if no

@@ -1,4 +1,3 @@
-import "./styles.css";
 import {
   ROUND_SIZES,
   createDeck,
@@ -9,6 +8,7 @@ import {
   trickWinner,
   scoreRound,
   estimatePrediction,
+  estimateBlindPrediction,
   chooseBotCard,
 } from "./game.js";
 
@@ -18,6 +18,7 @@ let state = loadGame();
 let timer = null;
 
 const suitName = { "♠": "spades", "♥": "hearts", "♦": "diamonds", "♣": "clubs" };
+const rankName = { A: "ace", J: "jack", Q: "queen", K: "king" };
 const isRed = (suit) => suit === "♥" || suit === "♦";
 const wait = (ms) => new Promise((resolve) => { timer = setTimeout(resolve, ms); });
 
@@ -65,17 +66,22 @@ function startRound() {
   state.leader = (state.dealer + 1) % state.players.length;
   state.turn = state.leader;
   state.phase = "predict";
-  state.message = "Choose how many tricks you’ll take.";
+  state.message = handSize === 1 ? "Blind round: predict without seeing your card." : "Choose how many tricks you’ll take.";
   render();
 }
 
 function cardMarkup(card, options = {}) {
   const classes = ["card", isRed(card.suit) ? "red" : "black", options.small ? "small" : "", options.disabled ? "disabled" : ""].filter(Boolean).join(" ");
-  return `<button class="${classes}" ${options.disabled ? "disabled" : ""} ${options.index != null ? `data-card-index="${options.index}"` : ""} aria-label="${card.rank} of ${suitName[card.suit]}">
-    <span class="card-corner"><b>${card.rank}</b><i>${card.suit}</i></span>
-    <span class="card-suit">${card.suit}</span>
-    <span class="card-corner bottom"><b>${card.rank}</b><i>${card.suit}</i></span>
-  </button>`;
+  const tag = options.displayOnly ? "span" : "button";
+  const label = `${rankName[card.rank] || card.rank} of ${suitName[card.suit]}`;
+  const artwork = new URL(`./cards/${label.replaceAll(" ", "_")}.svg`, import.meta.url).href;
+  return `<${tag} class="${classes}" ${options.displayOnly ? 'role="img"' : options.disabled ? "disabled" : ""} ${!options.displayOnly && options.index != null ? `data-card-index="${options.index}"` : ""} aria-label="${label}">
+    <img class="card-art" src="${artwork}" alt="" draggable="false" />
+  </${tag}>`;
+}
+
+function hiddenCardMarkup() {
+  return '<span class="card card-back" role="img" aria-label="Your card is hidden until all bids are locked"><span aria-hidden="true">▲</span></span>';
 }
 
 function playerMarkup(player, index) {
@@ -107,6 +113,7 @@ function setupMarkup() {
 
 function gameMarkup() {
   const human = state.players[0];
+  const blindBid = state.phase === "predict" && ROUND_SIZES[state.round] === 1;
   const legalIds = new Set(legalCards(human.hand, state.plays[0]?.card.suit).map((card) => card.id));
   const predictionOptions = Array.from({ length: human.hand.length + 1 }, (_, i) => `<button class="bid ${i === 0 ? "mountain-bid" : ""}" data-bid="${i}">${i === 0 ? "<span>▲</span> Mountaintop" : i}</button>`).join("");
   const opponents = state.players.slice(1).map((player, i) => playerMarkup(player, i + 1)).join("");
@@ -122,8 +129,18 @@ function gameMarkup() {
       <div class="status-pill">${state.message}</div>
     </section>
     ${playerMarkup(human, 0)}
-    <section class="hand" aria-label="Your hand">${human.hand.map((card, index) => cardMarkup(card, { index, disabled: state.phase !== "play" || state.turn !== 0 || !legalIds.has(card.id) })).join("")}</section>
-    ${state.phase === "predict" ? `<div class="modal-backdrop"><section class="bid-panel"><span class="panel-icon">▲</span><p class="eyebrow">Make your prediction</p><h2>How many tricks?</h2><p>Choose the number of tricks you think you’ll win this round.</p><div class="bid-options">${predictionOptions}</div><small><b>Mountaintop</b> scores +10 if you take no tricks, but −10 if you take any.</small></section></div>` : ""}
+    <section class="hand" aria-label="Your hand">${blindBid ? hiddenCardMarkup() : human.hand.map((card, index) => cardMarkup(card, { index, disabled: state.phase !== "play" || state.turn !== 0 || !legalIds.has(card.id) })).join("")}</section>
+    ${state.phase === "predict" ? `<div class="modal-backdrop bid-backdrop"><section class="bid-panel" aria-labelledby="bid-title">
+      <p class="eyebrow">Make your prediction · ${roundLabel}</p>
+      <h2 id="bid-title">${blindBid ? "Make a blind call" : "How many tricks?"}</h2>
+      <p>${blindBid ? "Your card is hidden. Study your opponents’ cards and trump, then make your call." : "Review your hand and trump, then choose your bid."}</p>
+      <div class="bid-trump">${cardMarkup(state.trumpCard, { small: true, displayOnly: true })}<div><h3>Trump: ${suitName[state.trumpCard.suit]}</h3><p>${state.trumpCard.suit} beats every other suit.</p></div></div>
+      ${blindBid ? `<h3 id="visible-cards-label">Opponents’ cards</h3><div class="blind-opponents" role="group" aria-labelledby="visible-cards-label">${state.players.slice(1).map((player) => `<div class="blind-opponent"><span>${player.name}</span>${cardMarkup(player.hand[0], { displayOnly: true })}</div>`).join("")}</div><p class="blind-lead">${state.leader === 0 ? "You lead" : `${state.players[state.leader].name} leads`} the trick. Bids are revealed together.</p>` : ""}
+      <h3 id="bid-hand-label">${blindBid ? "Your card · hidden until bids are locked" : "Your hand"}</h3>
+      <div class="bid-hand" role="group" aria-labelledby="bid-hand-label">${blindBid ? hiddenCardMarkup() : human.hand.map((card) => cardMarkup(card, { displayOnly: true })).join("")}</div>
+      <div class="bid-options">${predictionOptions}</div>
+      <small><b>Mountaintop</b> scores +10 if you take no tricks, but −10 if you take any.</small>
+    </section></div>` : ""}
     ${state.phase === "roundEnd" || state.phase === "gameEnd" ? summaryMarkup() : ""}
   </div>`;
 }
@@ -142,7 +159,7 @@ function summaryMarkup() {
 }
 
 function rulesMarkup() {
-  return `<div class="modal-backdrop" id="rules-modal"><section class="rules-panel"><button class="close" aria-label="Close">×</button><p class="eyebrow">The trail guide</p><h2>How to play</h2><h3>Predict</h3><p>Everyone secretly predicts how many tricks they’ll win. A bid of zero is called Mountaintop.</p><h3>Play</h3><p>Follow the led suit if you can. The highest trump wins; otherwise, the highest card in the led suit wins. The trick winner leads next.</p><h3>Score</h3><p>Hit your bid for 5 points plus each trick. Miss it and score only your tricks. A successful Mountaintop is +10; a failed one is −10.</p></section></div>`;
+  return `<div class="modal-backdrop" id="rules-modal"><section class="rules-panel"><button class="close" aria-label="Close">×</button><p class="eyebrow">The trail guide</p><h2>How to play</h2><h3>Predict</h3><p>Everyone secretly predicts how many tricks they’ll win. A bid of zero is called Mountaintop.</p><h3>One-card blind round</h3><p>Your card stays hidden while you bid Mountaintop or 1. You can see your opponents’ cards and trump. Each computer also bids without seeing its own card. All bids lock together, then your card is revealed.</p><h3>Play</h3><p>Follow the led suit if you can. The highest trump wins; otherwise, the highest card in the led suit wins. The trick winner leads next.</p><h3>Score</h3><p>Hit your bid for 5 points plus each trick. Miss it and score only your tricks. A successful Mountaintop is +10; a failed one is −10.</p></section></div>`;
 }
 
 function render() {
@@ -167,8 +184,19 @@ function bindEvents() {
 }
 
 async function makePredictions(humanBid) {
-  state.players[0].prediction = humanBid;
-  state.players.slice(1).forEach((player, offset) => { player.prediction = estimatePrediction(player.hand, state.trumpCard.suit, state.players.length, state.dealer === offset + 1); });
+  if (state.phase !== "predict" || !Number.isInteger(humanBid) || humanBid < 0 || humanBid > ROUND_SIZES[state.round]) return;
+  const blindRound = ROUND_SIZES[state.round] === 1;
+  const predictions = state.players.map((player, index) => {
+    if (index === 0) return humanBid;
+    if (blindRound) return estimateBlindPrediction({
+      visiblePlays: state.players.flatMap((other, otherIndex) => otherIndex === index ? [] : [{ playerIndex: otherIndex, card: other.hand[0] }]),
+      playerIndex: index,
+      leader: state.leader,
+      trumpCard: state.trumpCard,
+    });
+    return estimatePrediction(player.hand, state.trumpCard.suit, state.players.length, state.dealer === index);
+  });
+  state.players.forEach((player, index) => { player.prediction = predictions[index]; });
   state.phase = "play";
   state.message = `${state.players[state.leader].name} leads the first trick.`;
   render();
