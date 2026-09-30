@@ -53,6 +53,24 @@ function cardRisk(card, trumpSuit) {
   return card.value + (card.suit === trumpSuit ? 20 : 0);
 }
 
+// Only public information enters this calculation: never the bidder's own card
+// or the actual undealt deck. Each unseen card is an equally possible own card.
+export function estimateBlindPrediction({ visiblePlays, playerIndex, leader, trumpCard }) {
+  const knownIds = new Set([trumpCard.id, ...visiblePlays.map(({ card }) => card.id)]);
+  const candidates = createDeck().filter((card) => !knownIds.has(card.id));
+  const playerCount = visiblePlays.length + 1;
+  let wins = 0;
+  for (const card of candidates) {
+    const plays = [...visiblePlays, { playerIndex, card }].sort((a, b) =>
+      (a.playerIndex - leader + playerCount) % playerCount -
+      (b.playerIndex - leader + playerCount) % playerCount);
+    if (trickWinner(plays, trumpCard.suit).playerIndex === playerIndex) wins += 1;
+  }
+  const winChance = wins / candidates.length;
+  // Mountaintop earns +10 / -10; bidding one earns +6 / 0.
+  return 6 * winChance >= 10 - 20 * winChance ? 1 : 0;
+}
+
 export function chooseBotCard({ hand, plays, trumpSuit, prediction, tricks }) {
   const ledSuit = plays[0]?.card.suit;
   const legal = legalCards(hand, ledSuit);

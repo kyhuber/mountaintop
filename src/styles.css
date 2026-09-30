@@ -2,6 +2,29 @@
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradient(circle at 50% 35%, #214b3c 0, #102c24 35%, #07140f 100%); }
 button { font: inherit; }
+.modal-backdrop.bid-backdrop { overflow-y: auto; align-items: safe center; }
+.bid-panel { flex-shrink: 0; }
+.bid-panel h3 { margin: 0 0 10px; font-size: 14px; }
+.bid-trump { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 18px 0; text-align: left; }
+.bid-trump h3 { margin-bottom: 4px; text-transform: capitalize; }
+.bid-trump p { margin: 0; color: #59665f; font-size: 12px; }
+.bid-hand { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.bid-hand .card { width: 64px; height: 92px; }
+.bid-panel .card { display: inline-block; cursor: default; }
+.blind-opponents { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 14px; }
+.blind-opponent { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; }
+.blind-opponent .card { width: 58px; height: 82px; }
+.bid-backdrop .bid-panel p.blind-lead { margin: 0 0 18px; font-size: 12px; }
+.card.card-back { display: inline-grid; place-items: center; border: 4px solid #fffdf7; color: #efce85; background: repeating-linear-gradient(45deg, #235c4d 0 4px, #194637 4px 8px); cursor: default; }
+.bid-panel .card.card-back { display: inline-grid; }
+.card-back > span { display: grid; place-items: center; width: 34px; height: 42px; border: 1px solid #d6ad5d; border-radius: 50%; background: #194637; font-size: 21px; }
+@media (max-width: 520px) {
+  .modal-backdrop.bid-backdrop { padding: 12px; }
+  .bid-backdrop .bid-panel { padding: 20px 12px; }
+  .bid-hand { max-width: 240px; margin: 0 auto; }
+  .bid-hand .card { width: 60px; height: 84px; }
+  .bid-panel .bid-options { margin: 16px 0 12px; }
+}
 button:focus-visible { outline: 3px solid #f3c66a; outline-offset: 3px; }
 .setup-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; text-align: center; background-image: linear-gradient(180deg, transparent 60%, rgba(2, 8, 5, .7)), radial-gradient(circle at 20% 20%, rgba(223, 181, 99, .08), transparent 25%); }
 .brand-mark { width: 66px; height: 66px; display: grid; place-items: center; border: 1px solid #bd9c5d; border-radius: 50%; color: #e1ba6b; font-size: 25px; margin-bottom: 17px; box-shadow: 0 0 0 7px rgba(193, 158, 91, .06); }
@@ -32,7 +55,7 @@ header { min-height: 72px; display: flex; align-items: center; justify-content: 
 .played-card { text-align: center; }.played-card > span { display: block; height: 18px; color: #cad7d1; font-size: 9px; }
 .status-pill { position: absolute; bottom: 14px; padding: 6px 13px; border-radius: 20px; color: #cddbd4; background: rgba(4,18,13,.5); font-size: 11px; }
 .human-seat { width: 180px; margin: 10px auto 0; }.hand { display: flex; justify-content: center; padding: 4px 15px 10px; min-height: 126px; }.hand .card { margin-left: -18px; transition: transform .18s, filter .18s; }.hand .card:first-child { margin-left: 0; }.hand .card:not(:disabled):hover { transform: translateY(-15px) rotate(-1deg); z-index: 5; }
-.card { position: relative; width: 73px; height: 104px; flex: 0 0 auto; border: 0; border-radius: 6px; color: #17201d; background: #fffdf7; box-shadow: 0 4px 12px rgba(0,0,0,.27); cursor: pointer; }.card.red { color: #b6403c; }.card.small { width: 58px; height: 82px; pointer-events: none; }.card.disabled { filter: brightness(.62); cursor: not-allowed; }.card-corner { position: absolute; top: 5px; left: 6px; display: flex; flex-direction: column; align-items: center; font-size: 12px; line-height: 1; }.card-corner i { font-style: normal; font-size: 11px; }.card-corner.bottom { inset: auto 6px 5px auto; transform: rotate(180deg); }.card-suit { display: grid; place-items: center; height: 100%; font-size: 29px; }.card.small .card-suit { font-size: 23px; }.card.small .card-corner { font-size: 10px; }
+.card { padding: 0; overflow: hidden; position: relative; width: 73px; height: 104px; flex: 0 0 auto; border: 0; border-radius: 6px; color: #17201d; background: #fffdf7; box-shadow: 0 4px 12px rgba(0,0,0,.27); cursor: pointer; }.card.red { color: #b6403c; }.card.small { width: 58px; height: 82px; pointer-events: none; }.card.disabled { filter: brightness(.62); cursor: not-allowed; }.card-art { display: block; width: 100%; height: 100%; object-fit: fill; pointer-events: none; user-select: none; }
 .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px; background: rgba(2, 11, 8, .7); backdrop-filter: blur(5px); }
 .bid-panel, .score-panel, .rules-panel { position: relative; width: min(520px, 100%); padding: 30px; border: 1px solid #d7c8a8; border-radius: 15px; color: #27342f; background: #f7f2e7; text-align: center; box-shadow: 0 25px 70px rgba(0,0,0,.45); }.panel-icon { width: 42px; height: 42px; display: grid; place-items: center; margin: -52px auto 17px; border-radius: 50%; color: #f7e6bc; background: #27604e; border: 4px solid #f7f2e7; }.bid-panel h2, .score-panel h2, .rules-panel h2 { margin: 2px 0 8px; font-size: 31px; }.bid-panel > p:not(.eyebrow) { margin: 0; color: #718078; font-size: 13px; }.bid-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 24px 0 18px; }.bid { min-width: 48px; height: 48px; border: 1px solid #d3d2c9; border-radius: 8px; color: #244a3e; background: #fffdf7; font-weight: 700; cursor: pointer; }.bid:hover { color: #fff; background: #28634f; }.mountain-bid { width: 122px; }.mountain-bid span { color: #c09a51; margin-right: 4px; }.bid-panel small { display: block; padding: 12px; border-radius: 6px; color: #716b5d; background: #eee8da; font-size: 10px; }
 .score-table { margin: 22px 0; border-top: 1px solid #ded8cb; }.score-table div { display: grid; grid-template-columns: 1fr 1.5fr .5fr .8fr; gap: 6px; align-items: center; padding: 11px 4px; border-bottom: 1px solid #ded8cb; text-align: left; font-size: 12px; }.score-table span { color: #79827d; }.score-table b:not(:first-child) { color: #277054; text-align: right; }.score-table b.negative { color: #b84942; }.score-table em { color: #5d6b64; text-align: right; font-style: normal; }

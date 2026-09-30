@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mountaintop blind-round preview</title>
+  <link rel="stylesheet" href="../src/styles.css" />
+</head>
+<body>
+  <main id="app"></main>
+  <script type="module">
+    import { createDeck, createPlayers, shuffle } from "../src/game.js";
+    const count = new URLSearchParams(location.search).get("players") === "8" ? 8 : 4;
+    const deck = shuffle(createDeck());
+    const players = createPlayers(count).map((player) => ({
+      ...player, hand: [deck.pop()], prediction: null, tricks: 0,
+    }));
+    const game = { players, round: 5, dealer: count - 1, leader: 0, turn: 0,
+      phase: "predict", trumpCard: deck.pop(), plays: [], roundScores: [],
+      message: "Blind round: predict without seeing your card." };
+    // Isolate this manual test fixture from the real game's saved progress.
+    const memory = new Map([["mountaintop-game", JSON.stringify(game)]]);
+    Object.defineProperty(window, "localStorage", { value: {
+      getItem: (key) => memory.get(key) ?? null,
+      setItem: (key, value) => memory.set(key, value),
+      removeItem: (key) => memory.delete(key),
+    } });
+    await import("../src/app.js");
+  </script>
+</body>
+</html>
