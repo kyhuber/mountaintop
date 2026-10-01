@@ -4,6 +4,15 @@ A browser-based version of the Huber brothers' trick-taking card game. Play an
 11-round game against one to four computer opponents, make simultaneous bids,
 and try to reach the summit of the scoreboard.
 
+## Playing
+
+First-time visitors get a three-card trailhead (what the game is, how a trick
+works, how scoring works), can enter a name, and start at a three-player table
+with coach hints during their first game. Returning players skip straight to
+setup, where they choose two to five players and a Relaxed or Brisk pace.
+Finished tricks wait for a tap, bids are revealed one seat at a time, and every
+seat shows its public standing against its bid.
+
 ## Run locally
 
 The game has no build step and no runtime JavaScript dependencies. Start the

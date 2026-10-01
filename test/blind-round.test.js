@@ -32,7 +32,8 @@ test("a restored blind bid hides the human card everywhere and reveals it only a
         assert.equal(bids().length, 2);
         assert.ok(saved().players.every((p) => p.prediction === null));
         bids()[bid].click();
-        assert.equal(saved().phase, "play");
+        // Bids lock the instant the human commits; the seats then reveal them one at a time.
+        assert.equal(saved().phase, "reveal");
         assert.equal(saved().players[0].prediction, bid);
         assert.ok(saved().players.every((p) => p.prediction !== null));
         assert.match(app.innerHTML, /2_of_spades\.svg/);
