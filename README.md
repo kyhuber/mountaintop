@@ -22,6 +22,18 @@ npm run build
 
 The production-ready static files are written to `dist/`.
 
+## Scoring simulation
+
+Run the deterministic scoring experiment across all eight scoring variants:
+
+```bash
+npm run simulate:scoring -- --games=5000 --seed=20261001
+```
+
+The variants execute concurrently in worker threads and write machine-readable
+results to `analysis/scoring-results.json`. See `analysis/scoring-report.md` for
+the methodology, findings, limitations, and recommended human playtest slate.
+
 ## Rules summary
 
 The one-card round is a blind call: see opponents' cards and trump, but keep
