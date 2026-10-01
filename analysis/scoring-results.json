@@ -1,0 +1,684 @@
+{
+  "methodology": {
+    "seed": 20261001,
+    "gamesPerPlayerCount": 5000,
+    "playerCounts": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "variantsRunInParallel": 8,
+    "totalGames": 280000,
+    "caveat": "Automated agents use a shared expected-value bidding approximation and the production card-play heuristic; simulation metrics are balance proxies, not direct measurements of human fun."
+  },
+  "results": [
+    {
+      "variant": {
+        "id": "current-m10",
+        "miss": "current",
+        "mountainReward": 10,
+        "mountainPenalty": 10
+      },
+      "samples": {
+        "gamesPerPlayerCount": 5000,
+        "totalGames": 35000,
+        "playerRounds": 1925000
+      },
+      "metrics": {
+        "averageScore": 55.739645714285714,
+        "scoreStandardDeviation": 20.189086972638634,
+        "averageWinnerMargin": 12.2884,
+        "averageFinalSpread": 38.21874285714286,
+        "averageLeadChanges": 1.925142857142857,
+        "midpointLastPlaceComebackRate": 0.056285714285714286,
+        "averageFinalRoundContendersWithin10": 1.9597714285714285,
+        "competitiveFinalRate": 0.5839428571428571,
+        "averageFinalRoundContendersInReach": 3.0906571428571428,
+        "competitiveFinalReachRate": 0.8446571428571429,
+        "exactBidRate": 0.6428992207792208,
+        "mountainCallRate": 0.4211579220779221,
+        "mountainCallsPerGame": 23.163685714285716,
+        "mountainSuccessRate": 0.8539055590709103,
+        "mountainFailureRate": 0.14609444092908974,
+        "postFailureRecallRate": 0.40750003308059757,
+        "failedMountainPlayerWinRate": 0.11676143786783462
+      },
+      "byPlayerCount": [
+        {
+          "playerCount": 2,
+          "averageWinnerMargin": 24.3318,
+          "averageFinalSpread": 24.3318,
+          "mountainCallsPerGame": 7.511,
+          "mountainFailuresPerGame": 4.1508
+        },
+        {
+          "playerCount": 3,
+          "averageWinnerMargin": 16.3238,
+          "averageFinalSpread": 34.3594,
+          "mountainCallsPerGame": 12.5104,
+          "mountainFailuresPerGame": 4.2918
+        },
+        {
+          "playerCount": 4,
+          "averageWinnerMargin": 12.168,
+          "averageFinalSpread": 38.3906,
+          "mountainCallsPerGame": 17.2474,
+          "mountainFailuresPerGame": 3.8188
+        },
+        {
+          "playerCount": 5,
+          "averageWinnerMargin": 10.0452,
+          "averageFinalSpread": 41.138,
+          "mountainCallsPerGame": 22.4198,
+          "mountainFailuresPerGame": 3.38
+        },
+        {
+          "playerCount": 6,
+          "averageWinnerMargin": 8.439,
+          "averageFinalSpread": 42.011,
+          "mountainCallsPerGame": 27.2146,
+          "mountainFailuresPerGame": 2.884
+        },
+        {
+          "playerCount": 7,
+          "averageWinnerMargin": 7.6704,
+          "averageFinalSpread": 43.3406,
+          "mountainCallsPerGame": 34.4614,
+          "mountainFailuresPerGame": 2.7094
+        },
+        {
+          "playerCount": 8,
+          "averageWinnerMargin": 7.0406,
+          "averageFinalSpread": 43.9598,
+          "mountainCallsPerGame": 40.7812,
+          "mountainFailuresPerGame": 2.4538
+        }
+      ]
+    },
+    {
+      "variant": {
+        "id": "current-m8",
+        "miss": "current",
+        "mountainReward": 8,
+        "mountainPenalty": 8
+      },
+      "samples": {
+        "gamesPerPlayerCount": 5000,
+        "totalGames": 35000,
+        "playerRounds": 1925000
+      },
+      "metrics": {
+        "averageScore": 49.00076571428571,
+        "scoreStandardDeviation": 15.724224786232472,
+        "averageWinnerMargin": 9.77822857142857,
+        "averageFinalSpread": 30.754114285714287,
+        "averageLeadChanges": 1.8068285714285715,
+        "midpointLastPlaceComebackRate": 0.057742857142857144,
+        "averageFinalRoundContendersWithin10": 2.2378285714285715,
+        "competitiveFinalRate": 0.6783428571428571,
+        "averageFinalRoundContendersInReach": 3.3659714285714286,
+        "competitiveFinalReachRate": 0.8814571428571428,
+        "exactBidRate": 0.6375438961038961,
+        "mountainCallRate": 0.4072524675324675,
+        "mountainCallsPerGame": 22.398885714285715,
+        "mountainSuccessRate": 0.8594611211527104,
+        "mountainFailureRate": 0.1405388788472896,
+        "postFailureRecallRate": 0.39160212685467344,
+        "failedMountainPlayerWinRate": 0.11241678500241015
+      },
+      "byPlayerCount": [
+        {
+          "playerCount": 2,
+          "averageWinnerMargin": 19.956,
+          "averageFinalSpread": 19.956,
+          "mountainCallsPerGame": 7.0862,
+          "mountainFailuresPerGame": 3.7746
+        },
+        {
+          "playerCount": 3,
+          "averageWinnerMargin": 12.8214,
+          "averageFinalSpread": 27.3244,
+          "mountainCallsPerGame": 11.808,
+          "mountainFailuresPerGame": 3.945
+        },
+        {
+          "playerCount": 4,
+          "averageWinnerMargin": 9.487,
+          "averageFinalSpread": 30.8106,
+          "mountainCallsPerGame": 16.8322,
+          "mountainFailuresPerGame": 3.6152
+        },
+        {
+          "playerCount": 5,
+          "averageWinnerMargin": 7.8086,
+          "averageFinalSpread": 32.6944,
+          "mountainCallsPerGame": 21.555,
+          "mountainFailuresPerGame": 3.0974
+        },
+        {
+          "playerCount": 6,
+          "averageWinnerMargin": 6.7446,
+          "averageFinalSpread": 33.9118,
+          "mountainCallsPerGame": 26.676,
+          "mountainFailuresPerGame": 2.7376
+        },
+        {
+          "playerCount": 7,
+          "averageWinnerMargin": 6.072,
+          "averageFinalSpread": 34.9784,
+          "mountainCallsPerGame": 32.62,
+          "mountainFailuresPerGame": 2.4842
+        },
+        {
+          "playerCount": 8,
+          "averageWinnerMargin": 5.558,
+          "averageFinalSpread": 35.6032,
+          "mountainCallsPerGame": 40.2148,
+          "mountainFailuresPerGame": 2.3814
+        }
+      ]
+    },
+    {
+      "variant": {
+        "id": "current-m6",
+        "miss": "current",
+        "mountainReward": 6,
+        "mountainPenalty": 6
+      },
+      "samples": {
+        "gamesPerPlayerCount": 5000,
+        "totalGames": 35000,
+        "playerRounds": 1925000
+      },
+      "metrics": {
+        "averageScore": 42.36624571428572,
+        "scoreStandardDeviation": 11.640285026808343,
+        "averageWinnerMargin": 7.657857142857143,
+        "averageFinalSpread": 24.26442857142857,
+        "averageLeadChanges": 1.4849714285714286,
+        "midpointLastPlaceComebackRate": 0.05865714285714286,
+        "averageFinalRoundContendersWithin10": 2.5645714285714285,
+        "competitiveFinalRate": 0.7666857142857143,
+        "averageFinalRoundContendersInReach": 3.618114285714286,
+        "competitiveFinalReachRate": 0.9145142857142857,
+        "exactBidRate": 0.6276623376623377,
+        "mountainCallRate": 0.3823755844155844,
+        "mountainCallsPerGame": 21.030657142857144,
+        "mountainSuccessRate": 0.8680035811665419,
+        "mountainFailureRate": 0.13199641883345808,
+        "postFailureRecallRate": 0.36046836362159224,
+        "failedMountainPlayerWinRate": 0.10810962360692507
+      },
+      "byPlayerCount": [
+        {
+          "playerCount": 2,
+          "averageWinnerMargin": 14.9974,
+          "averageFinalSpread": 14.9974,
+          "mountainCallsPerGame": 5.9368,
+          "mountainFailuresPerGame": 2.9792
+        },
+        {
+          "playerCount": 3,
+          "averageWinnerMargin": 9.8636,
+          "averageFinalSpread": 21.1584,
+          "mountainCallsPerGame": 10.764,
+          "mountainFailuresPerGame": 3.4218
+        },
+        {
+          "playerCount": 4,
+          "averageWinnerMargin": 7.4206,
+          "averageFinalSpread": 23.9754,
+          "mountainCallsPerGame": 15.6894,
+          "mountainFailuresPerGame": 3.235
+        },
+        {
+          "playerCount": 5,
+          "averageWinnerMargin": 6.1878,
+          "averageFinalSpread": 25.6546,
+          "mountainCallsPerGame": 20.5604,
+          "mountainFailuresPerGame": 2.835
+        },
+        {
+          "playerCount": 6,
+          "averageWinnerMargin": 5.5152,
+          "averageFinalSpread": 27.1652,
+          "mountainCallsPerGame": 25.215,
+          "mountainFailuresPerGame": 2.4818
+        },
+        {
+          "playerCount": 7,
+          "averageWinnerMargin": 5.0354,
+          "averageFinalSpread": 28.252,
+          "mountainCallsPerGame": 30.885,
+          "mountainFailuresPerGame": 2.2942
+        },
+        {
+          "playerCount": 8,
+          "averageWinnerMargin": 4.585,
+          "averageFinalSpread": 28.648,
+          "mountainCallsPerGame": 38.164,
+          "mountainFailuresPerGame": 2.1848
+        }
+      ]
+    },
+    {
+      "variant": {
+        "id": "current-m10-6",
+        "miss": "current",
+        "mountainReward": 10,
+        "mountainPenalty": 6
+      },
+      "samples": {
+        "gamesPerPlayerCount": 5000,
+        "totalGames": 35000,
+        "playerRounds": 1925000
+      },
+      "metrics": {
+        "averageScore": 61.47701714285714,
+        "scoreStandardDeviation": 19.087158519792993,
+        "averageWinnerMargin": 11.141257142857143,
+        "averageFinalSpread": 34.75042857142857,
+        "averageLeadChanges": 1.8519428571428571,
+        "midpointLastPlaceComebackRate": 0.05934285714285714,
+        "averageFinalRoundContendersWithin10": 2.0328857142857144,
+        "competitiveFinalRate": 0.6138285714285714,
+        "averageFinalRoundContendersInReach": 2.809657142857143,
+        "competitiveFinalReachRate": 0.8094,
+        "exactBidRate": 0.6710493506493507,
+        "mountainCallRate": 0.48407896103896103,
+        "mountainCallsPerGame": 26.624342857142857,
+        "mountainSuccessRate": 0.8425683477633787,
+        "mountainFailureRate": 0.15743165223662126,
+        "postFailureRecallRate": 0.4715790370622842,
+        "failedMountainPlayerWinRate": 0.12967098725195816
+      },
+      "byPlayerCount": [
+        {
+          "playerCount": 2,
+          "averageWinnerMargin": 20.4064,
+          "averageFinalSpread": 20.4064,
+          "mountainCallsPerGame": 8.5474,
+          "mountainFailuresPerGame": 4.8262
+        },
+        {
+          "playerCount": 3,
+          "averageWinnerMargin": 14.3062,
+          "averageFinalSpread": 29.5704,
+          "mountainCallsPerGame": 13.6958,
+          "mountainFailuresPerGame": 4.9712
+        },
+        {
+          "playerCount": 4,
+          "averageWinnerMargin": 11.5594,
+          "averageFinalSpread": 34.5892,
+          "mountainCallsPerGame": 19.0234,
+          "mountainFailuresPerGame": 4.5858
+        },
+        {
+          "playerCount": 5,
+          "averageWinnerMargin": 9.5406,
+          "averageFinalSpread": 37.6152,
+          "mountainCallsPerGame": 25.5508,
+          "mountainFailuresPerGame": 4.2324
+        },
+        {
+          "playerCount": 6,
+          "averageWinnerMargin": 8.0762,
+          "averageFinalSpread": 39.3936,
+          "mountainCallsPerGame": 32.9028,
+          "mountainFailuresPerGame": 3.9496
+        },
+        {
+          "playerCount": 7,
+          "averageWinnerMargin": 7.375,
+          "averageFinalSpread": 40.3454,
+          "mountainCallsPerGame": 39.3952,
+          "mountainFailuresPerGame": 3.4832
+        },
+        {
+          "playerCount": 8,
+          "averageWinnerMargin": 6.725,
+          "averageFinalSpread": 41.3328,
+          "mountainCallsPerGame": 47.255,
+          "mountainFailuresPerGame": 3.2922
+        }
+      ]
+    },
+    {
+      "variant": {
+        "id": "symmetric-m10",
+        "miss": "symmetric",
+        "mountainReward": 10,
+        "mountainPenalty": 10
+      },
+      "samples": {
+        "gamesPerPlayerCount": 5000,
+        "totalGames": 35000,
+        "playerRounds": 1925000
+      },
+      "metrics": {
+        "averageScore": 49.784937142857146,
+        "scoreStandardDeviation": 24.89874786229891,
+        "averageWinnerMargin": 14.072571428571429,
+        "averageFinalSpread": 42.72542857142857,
+        "averageLeadChanges": 1.8606285714285715,
+        "midpointLastPlaceComebackRate": 0.056857142857142856,
+        "averageFinalRoundContendersWithin10": 1.8129714285714287,
+        "competitiveFinalRate": 0.5262285714285714,
+        "averageFinalRoundContendersInReach": 2.8365714285714287,
+        "competitiveFinalReachRate": 0.8050571428571428,
+        "exactBidRate": 0.6561579220779221,
+        "mountainCallRate": 0.4462535064935065,
+        "mountainCallsPerGame": 24.543942857142856,
+        "mountainSuccessRate": 0.8514955100938492,
+        "mountainFailureRate": 0.14850448990615084,
+        "postFailureRecallRate": 0.43214428575277675,
+        "failedMountainPlayerWinRate": 0.13086343862303765
+      },
+      "byPlayerCount": [
+        {
+          "playerCount": 2,
+          "averageWinnerMargin": 26.824,
+          "averageFinalSpread": 26.824,
+          "mountainCallsPerGame": 7.9922,
+          "mountainFailuresPerGame": 4.4672
+        },
+        {
+          "playerCount": 3,
+          "averageWinnerMargin": 18.8748,
+          "averageFinalSpread": 38.4626,
+          "mountainCallsPerGame": 12.9104,
+          "mountainFailuresPerGame": 4.4982
+        },
+        {
+          "playerCount": 4,
+          "averageWinnerMargin": 14.5866,
+          "averageFinalSpread": 43.4028,
+          "mountainCallsPerGame": 18.0676,
+          "mountainFailuresPerGame": 4.1208
+        },
+        {
+          "playerCount": 5,
+          "averageWinnerMargin": 11.651,
+          "averageFinalSpread": 46.0396,
+          "mountainCallsPerGame": 23.1014,
+          "mountainFailuresPerGame": 3.5522
+        },
+        {
+          "playerCount": 6,
+          "averageWinnerMargin": 9.8292,
+          "averageFinalSpread": 47.3634,
+          "mountainCallsPerGame": 29.9018,
+          "mountainFailuresPerGame": 3.2756
+        },
+        {
+          "playerCount": 7,
+          "averageWinnerMargin": 8.716,
+          "averageFinalSpread": 48.1398,
+          "mountainCallsPerGame": 36.3144,
+          "mountainFailuresPerGame": 2.9012
+        },
+        {
+          "playerCount": 8,
+          "averageWinnerMargin": 8.0264,
+          "averageFinalSpread": 48.8458,
+          "mountainCallsPerGame": 43.5198,
+          "mountainFailuresPerGame": 2.699
+        }
+      ]
+    },
+    {
+      "variant": {
+        "id": "symmetric-m8",
+        "miss": "symmetric",
+        "mountainReward": 8,
+        "mountainPenalty": 8
+      },
+      "samples": {
+        "gamesPerPlayerCount": 5000,
+        "totalGames": 35000,
+        "playerRounds": 1925000
+      },
+      "metrics": {
+        "averageScore": 42.35214285714286,
+        "scoreStandardDeviation": 20.356807523553897,
+        "averageWinnerMargin": 11.664714285714286,
+        "averageFinalSpread": 35.362314285714284,
+        "averageLeadChanges": 1.7834571428571429,
+        "midpointLastPlaceComebackRate": 0.058685714285714285,
+        "averageFinalRoundContendersWithin10": 2.0257428571428573,
+        "competitiveFinalRate": 0.6077142857142858,
+        "averageFinalRoundContendersInReach": 3.0446,
+        "competitiveFinalReachRate": 0.8369714285714286,
+        "exactBidRate": 0.6496051948051949,
+        "mountainCallRate": 0.43207324675324676,
+        "mountainCallsPerGame": 23.76402857142857,
+        "mountainSuccessRate": 0.8532427762969482,
+        "mountainFailureRate": 0.1467572237030518,
+        "postFailureRecallRate": 0.41853825533701516,
+        "failedMountainPlayerWinRate": 0.13357867030610254
+      },
+      "byPlayerCount": [
+        {
+          "playerCount": 2,
+          "averageWinnerMargin": 22.5452,
+          "averageFinalSpread": 22.5452,
+          "mountainCallsPerGame": 7.811,
+          "mountainFailuresPerGame": 4.3352
+        },
+        {
+          "playerCount": 3,
+          "averageWinnerMargin": 15.7882,
+          "averageFinalSpread": 32.173,
+          "mountainCallsPerGame": 12.6016,
+          "mountainFailuresPerGame": 4.3182
+        },
+        {
+          "playerCount": 4,
+          "averageWinnerMargin": 11.8216,
+          "averageFinalSpread": 35.7424,
+          "mountainCallsPerGame": 17.5166,
+          "mountainFailuresPerGame": 3.9134
+        },
+        {
+          "playerCount": 5,
+          "averageWinnerMargin": 9.706,
+          "averageFinalSpread": 38.0004,
+          "mountainCallsPerGame": 22.481,
+          "mountainFailuresPerGame": 3.3904
+        },
+        {
+          "playerCount": 6,
+          "averageWinnerMargin": 8.0634,
+          "averageFinalSpread": 39.1076,
+          "mountainCallsPerGame": 28.627,
+          "mountainFailuresPerGame": 3.0984
+        },
+        {
+          "playerCount": 7,
+          "averageWinnerMargin": 7.1396,
+          "averageFinalSpread": 39.6266,
+          "mountainCallsPerGame": 35.3596,
+          "mountainFailuresPerGame": 2.792
+        },
+        {
+          "playerCount": 8,
+          "averageWinnerMargin": 6.589,
+          "averageFinalSpread": 40.341,
+          "mountainCallsPerGame": 41.9514,
+          "mountainFailuresPerGame": 2.5652
+        }
+      ]
+    },
+    {
+      "variant": {
+        "id": "symmetric-m6",
+        "miss": "symmetric",
+        "mountainReward": 6,
+        "mountainPenalty": 6
+      },
+      "samples": {
+        "gamesPerPlayerCount": 5000,
+        "totalGames": 35000,
+        "playerRounds": 1925000
+      },
+      "metrics": {
+        "averageScore": 35.208531428571426,
+        "scoreStandardDeviation": 16.4385892795106,
+        "averageWinnerMargin": 9.672428571428572,
+        "averageFinalSpread": 29.1034,
+        "averageLeadChanges": 1.3486571428571428,
+        "midpointLastPlaceComebackRate": 0.06154285714285714,
+        "averageFinalRoundContendersWithin10": 2.2758285714285713,
+        "competitiveFinalRate": 0.6814571428571429,
+        "averageFinalRoundContendersInReach": 3.210114285714286,
+        "competitiveFinalReachRate": 0.8596857142857143,
+        "exactBidRate": 0.6423262337662338,
+        "mountainCallRate": 0.41952623376623377,
+        "mountainCallsPerGame": 23.073942857142857,
+        "mountainSuccessRate": 0.8546226541256186,
+        "mountainFailureRate": 0.1453773458743815,
+        "postFailureRecallRate": 0.40542053086024943,
+        "failedMountainPlayerWinRate": 0.14542766208054533
+      },
+      "byPlayerCount": [
+        {
+          "playerCount": 2,
+          "averageWinnerMargin": 18.5688,
+          "averageFinalSpread": 18.5688,
+          "mountainCallsPerGame": 7.518,
+          "mountainFailuresPerGame": 4.1764
+        },
+        {
+          "playerCount": 3,
+          "averageWinnerMargin": 13.1562,
+          "averageFinalSpread": 26.651,
+          "mountainCallsPerGame": 12.3492,
+          "mountainFailuresPerGame": 4.2378
+        },
+        {
+          "playerCount": 4,
+          "averageWinnerMargin": 9.7468,
+          "averageFinalSpread": 29.405,
+          "mountainCallsPerGame": 17.1404,
+          "mountainFailuresPerGame": 3.7646
+        },
+        {
+          "playerCount": 5,
+          "averageWinnerMargin": 8.0114,
+          "averageFinalSpread": 31.2074,
+          "mountainCallsPerGame": 22.2076,
+          "mountainFailuresPerGame": 3.3044
+        },
+        {
+          "playerCount": 6,
+          "averageWinnerMargin": 6.7408,
+          "averageFinalSpread": 32.0556,
+          "mountainCallsPerGame": 27.1672,
+          "mountainFailuresPerGame": 2.8578
+        },
+        {
+          "playerCount": 7,
+          "averageWinnerMargin": 5.9868,
+          "averageFinalSpread": 32.7096,
+          "mountainCallsPerGame": 34.358,
+          "mountainFailuresPerGame": 2.6798
+        },
+        {
+          "playerCount": 8,
+          "averageWinnerMargin": 5.4962,
+          "averageFinalSpread": 33.1264,
+          "mountainCallsPerGame": 40.7772,
+          "mountainFailuresPerGame": 2.4602
+        }
+      ]
+    },
+    {
+      "variant": {
+        "id": "symmetric-m10-6",
+        "miss": "symmetric",
+        "mountainReward": 10,
+        "mountainPenalty": 6
+      },
+      "samples": {
+        "gamesPerPlayerCount": 5000,
+        "totalGames": 35000,
+        "playerRounds": 1925000
+      },
+      "metrics": {
+        "averageScore": 55.72555428571429,
+        "scoreStandardDeviation": 24.071600685245464,
+        "averageWinnerMargin": 13.138114285714286,
+        "averageFinalSpread": 40.05925714285714,
+        "averageLeadChanges": 1.8019714285714286,
+        "midpointLastPlaceComebackRate": 0.05797142857142857,
+        "averageFinalRoundContendersWithin10": 1.8564,
+        "competitiveFinalRate": 0.5476571428571428,
+        "averageFinalRoundContendersInReach": 2.5464571428571428,
+        "competitiveFinalReachRate": 0.7525142857142857,
+        "exactBidRate": 0.6812535064935065,
+        "mountainCallRate": 0.5233927272727272,
+        "mountainCallsPerGame": 28.7866,
+        "mountainSuccessRate": 0.829079204510829,
+        "mountainFailureRate": 0.17092079548917105,
+        "postFailureRecallRate": 0.5170335772145284,
+        "failedMountainPlayerWinRate": 0.14439114212337065
+      },
+      "byPlayerCount": [
+        {
+          "playerCount": 2,
+          "averageWinnerMargin": 23.4618,
+          "averageFinalSpread": 23.4618,
+          "mountainCallsPerGame": 9.1326,
+          "mountainFailuresPerGame": 5.2966
+        },
+        {
+          "playerCount": 3,
+          "averageWinnerMargin": 17.3972,
+          "averageFinalSpread": 34.9106,
+          "mountainCallsPerGame": 14.876,
+          "mountainFailuresPerGame": 5.6818
+        },
+        {
+          "playerCount": 4,
+          "averageWinnerMargin": 13.935,
+          "averageFinalSpread": 40.8832,
+          "mountainCallsPerGame": 21.3404,
+          "mountainFailuresPerGame": 5.5942
+        },
+        {
+          "playerCount": 5,
+          "averageWinnerMargin": 11.389,
+          "averageFinalSpread": 44.2314,
+          "mountainCallsPerGame": 28.5718,
+          "mountainFailuresPerGame": 5.2354
+        },
+        {
+          "playerCount": 6,
+          "averageWinnerMargin": 9.7082,
+          "averageFinalSpread": 45.2912,
+          "mountainCallsPerGame": 35.3974,
+          "mountainFailuresPerGame": 4.7162
+        },
+        {
+          "playerCount": 7,
+          "averageWinnerMargin": 8.4408,
+          "averageFinalSpread": 45.6394,
+          "mountainCallsPerGame": 42.5082,
+          "mountainFailuresPerGame": 4.1792
+        },
+        {
+          "playerCount": 8,
+          "averageWinnerMargin": 7.6348,
+          "averageFinalSpread": 45.9972,
+          "mountainCallsPerGame": 49.6798,
+          "mountainFailuresPerGame": 3.7382
+        }
+      ]
+    }
+  ]
+}
