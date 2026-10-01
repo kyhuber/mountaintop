@@ -1,4 +1,6 @@
 import {
+  MAX_PLAYERS,
+  MIN_PLAYERS,
   ROUND_SIZES,
   chooseBotCard,
   createDeck,
@@ -6,6 +8,9 @@ import {
   shuffle,
   trickWinner,
 } from "./game.js";
+
+// Every table size the production app allows, so simulation evidence matches what players can actually choose.
+export const PRODUCTION_PLAYER_COUNTS = Array.from({ length: MAX_PLAYERS - MIN_PLAYERS + 1 }, (_, i) => MIN_PLAYERS + i);
 
 export const SCORING_VARIANTS = [
   ...[10, 8, 6].map((value) => ({ id: `current-m${value}`, miss: "current", mountainReward: value, mountainPenalty: value })),
@@ -176,7 +181,7 @@ export function simulateGame({ variant, playerCount, gameIndex, seed = 20261001 
   };
 }
 
-export function simulateVariant({ variant, gamesPerPlayerCount, seed = 20261001, playerCounts = [2, 3, 4, 5, 6, 7, 8] }) {
+export function simulateVariant({ variant, gamesPerPlayerCount, seed = 20261001, playerCounts = PRODUCTION_PLAYER_COUNTS }) {
   const totals = Object.fromEntries([
     "games", "players", "score", "scoreSquared", "winnerMargin", "finalSpread", "leadChanges", "midpointComebacks",
     "finalRoundContenders", "competitiveFinals", "finalRoundReachContenders", "competitiveFinalReach", "exactBids", "playerRounds", "mountainCalls", "mountainSuccesses",

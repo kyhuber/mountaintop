@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { Worker } from "node:worker_threads";
-import { SCORING_VARIANTS } from "../src/simulation.js";
+import { PRODUCTION_PLAYER_COUNTS, SCORING_VARIANTS } from "../src/simulation.js";
 
 function option(name, fallback) {
   const prefix = `--${name}=`;
@@ -27,7 +27,7 @@ const report = {
   methodology: {
     seed,
     gamesPerPlayerCount,
-    playerCounts: [2, 3, 4, 5, 6, 7, 8],
+    playerCounts: PRODUCTION_PLAYER_COUNTS,
     variantsRunInParallel: SCORING_VARIANTS.length,
     totalGames: results.reduce((total, result) => total + result.samples.totalGames, 0),
     caveat: "Automated agents use a shared expected-value bidding approximation and the production card-play heuristic; simulation metrics are balance proxies, not direct measurements of human fun.",
