@@ -2,6 +2,11 @@ export const SUITS = ["♠", "♥", "♦", "♣"];
 export const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
 export const ROUND_SIZES = [6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6];
 export const BOT_NAMES = ["Mira", "Theo", "June", "Felix", "Sage", "Wren", "Otis"];
+export const MOUNTAINTOP_POINTS = 6;
+
+export function leadText(player) {
+  return player.human ? "You lead" : `${player.name} leads`;
+}
 
 export function createDeck() {
   return SUITS.flatMap((suit) => RANKS.map((rank, value) => ({ id: `${rank}${suit}`, rank, suit, value })));
@@ -31,11 +36,11 @@ export function trickWinner(plays, trumpSuit) {
 }
 
 export function scoreRound(prediction, tricks) {
-  if (prediction === 0) return tricks === 0 ? 10 : -10;
-  return prediction === tricks ? 5 + tricks : tricks;
+  if (prediction === 0) return tricks === 0 ? MOUNTAINTOP_POINTS : -MOUNTAINTOP_POINTS;
+  return prediction === tricks ? 5 + tricks : -Math.abs(prediction - tricks);
 }
 
-export function estimatePrediction(hand, trumpSuit, playerCount, isDealer) {
+export function predictionDistribution(hand, trumpSuit, playerCount, isDealer) {
   let expected = 0;
   for (const card of hand) {
     if (card.suit === trumpSuit) {
@@ -45,8 +50,28 @@ export function estimatePrediction(hand, trumpSuit, playerCount, isDealer) {
     else if (card.value === 10) expected += 0.18;
   }
   if (isDealer) expected += 0.08;
-  const rounded = Math.max(0, Math.min(hand.length, Math.round(expected)));
-  return expected < 0.42 ? 0 : rounded;
+  expected = Math.max(0, Math.min(hand.length, expected));
+  if (hand.length === 0) return [1];
+  const probability = Math.max(0.001, Math.min(0.999, expected / hand.length));
+  const distribution = Array(hand.length + 1).fill(0);
+  distribution[0] = (1 - probability) ** hand.length;
+  for (let tricks = 1; tricks <= hand.length; tricks += 1) {
+    distribution[tricks] = distribution[tricks - 1] * ((hand.length - tricks + 1) / tricks) * (probability / (1 - probability));
+  }
+  return distribution;
+}
+
+export function bestPrediction(distribution, scorer = scoreRound) {
+  let best = { prediction: 0, value: -Infinity };
+  for (let prediction = 0; prediction < distribution.length; prediction += 1) {
+    const value = distribution.reduce((total, probability, tricks) => total + probability * scorer(prediction, tricks), 0);
+    if (value > best.value + 1e-12) best = { prediction, value };
+  }
+  return best.prediction;
+}
+
+export function estimatePrediction(hand, trumpSuit, playerCount, isDealer) {
+  return bestPrediction(predictionDistribution(hand, trumpSuit, playerCount, isDealer));
 }
 
 function cardRisk(card, trumpSuit) {
@@ -67,8 +92,9 @@ export function estimateBlindPrediction({ visiblePlays, playerIndex, leader, tru
     if (trickWinner(plays, trumpCard.suit).playerIndex === playerIndex) wins += 1;
   }
   const winChance = wins / candidates.length;
-  // Mountaintop earns +10 / -10; bidding one earns +6 / 0.
-  return 6 * winChance >= 10 - 20 * winChance ? 1 : 0;
+  const bidOneValue = winChance * scoreRound(1, 1) + (1 - winChance) * scoreRound(1, 0);
+  const mountainValue = winChance * scoreRound(0, 1) + (1 - winChance) * scoreRound(0, 0);
+  return bidOneValue >= mountainValue ? 1 : 0;
 }
 
 export function chooseBotCard({ hand, plays, trumpSuit, prediction, tricks }) {
