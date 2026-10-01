@@ -8,10 +8,6 @@ export function leadText(player) {
   return player.human ? "You lead" : `${player.name} leads`;
 }
 
-export function leadText(player) {
-  return player.human ? "You lead" : `${player.name} leads`;
-}
-
 export function createDeck() {
   return SUITS.flatMap((suit) => RANKS.map((rank, value) => ({ id: `${rank}${suit}`, rank, suit, value })));
 }
