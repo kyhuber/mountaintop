@@ -373,7 +373,7 @@ function playerMarkup(player, index) {
     <div class="avatar">${escapeHtml(player.name[0].toUpperCase())}${mountain ? '<span class="mt-badge" aria-hidden="true">▲</span>' : ""}</div>
     <div class="player-info"><strong>${escapeHtml(player.name)}</strong><span>${player.score} pts</span></div>
     ${dealer ? '<span class="dealer" title="Dealer">D</span>' : ""}
-    <div class="player-stats"><span>Bid <b>${bid}</b></span>${status ? `<span class="status ${status.key}">${status.label}</span>` : `<span>Tricks <b>${player.tricks ?? 0}</b></span>`}</div>
+    <div class="player-stats ${status ? "has-status" : ""}"><span>Bid <b>${bid}</b></span>${status ? `<span class="status ${status.key}">${status.label}</span>` : `<span>Tricks <b>${player.tricks ?? 0}</b></span>`}</div>
     ${pileMarkup(player)}
   </article>`;
 }
