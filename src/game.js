@@ -3,6 +3,10 @@ export const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K
 export const ROUND_SIZES = [6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6];
 export const BOT_NAMES = ["Mira", "Theo", "June", "Felix", "Sage", "Wren", "Otis"];
 
+export function leadText(player) {
+  return player.human ? "You lead" : `${player.name} leads`;
+}
+
 export function createDeck() {
   return SUITS.flatMap((suit) => RANKS.map((rank, value) => ({ id: `${rank}${suit}`, rank, suit, value })));
 }

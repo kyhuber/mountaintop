@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createDeck, legalCards, trickWinner, scoreRound, ROUND_SIZES } from "../src/game.js";
+import { createDeck, legalCards, trickWinner, scoreRound, leadText, ROUND_SIZES } from "../src/game.js";
 
 const card = (rank, suit, value) => ({ id: `${rank}${suit}`, rank, suit, value });
 
@@ -44,4 +44,9 @@ test("round scoring handles exact bids, misses, and Mountaintop", () => {
   assert.equal(scoreRound(0, 0), 10);
   assert.equal(scoreRound(0, 1), -10);
   assert.equal(scoreRound(0, 5), -10);
+});
+
+test("lead text uses the correct grammar for human and computer players", () => {
+  assert.equal(leadText({ name: "You", human: true }), "You lead");
+  assert.equal(leadText({ name: "Mira", human: false }), "Mira leads");
 });
