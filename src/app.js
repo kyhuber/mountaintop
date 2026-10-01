@@ -10,6 +10,7 @@ import {
   estimatePrediction,
   estimateBlindPrediction,
   chooseBotCard,
+  leadText,
 } from "./game.js";
 
 const app = document.querySelector("#app");
@@ -135,7 +136,7 @@ function gameMarkup() {
       <h2 id="bid-title">${blindBid ? "Make a blind call" : "How many tricks?"}</h2>
       <p>${blindBid ? "Your card is hidden. Study your opponents’ cards and trump, then make your call." : "Review your hand and trump, then choose your bid."}</p>
       <div class="bid-trump">${cardMarkup(state.trumpCard, { small: true, displayOnly: true })}<div><h3>Trump: ${suitName[state.trumpCard.suit]}</h3><p>${state.trumpCard.suit} beats every other suit.</p></div></div>
-      ${blindBid ? `<h3 id="visible-cards-label">Opponents’ cards</h3><div class="blind-opponents" role="group" aria-labelledby="visible-cards-label">${state.players.slice(1).map((player) => `<div class="blind-opponent"><span>${player.name}</span>${cardMarkup(player.hand[0], { displayOnly: true })}</div>`).join("")}</div><p class="blind-lead">${state.leader === 0 ? "You lead" : `${state.players[state.leader].name} leads`} the trick. Bids are revealed together.</p>` : ""}
+      ${blindBid ? `<h3 id="visible-cards-label">Opponents’ cards</h3><div class="blind-opponents" role="group" aria-labelledby="visible-cards-label">${state.players.slice(1).map((player) => `<div class="blind-opponent"><span>${player.name}</span>${cardMarkup(player.hand[0], { displayOnly: true })}</div>`).join("")}</div><p class="blind-lead">${leadText(state.players[state.leader])} the trick. Bids are revealed together.</p>` : ""}
       <h3 id="bid-hand-label">${blindBid ? "Your card · hidden until bids are locked" : "Your hand"}</h3>
       <div class="bid-hand" role="group" aria-labelledby="bid-hand-label">${blindBid ? hiddenCardMarkup() : human.hand.map((card) => cardMarkup(card, { displayOnly: true })).join("")}</div>
       <div class="bid-options">${predictionOptions}</div>
@@ -198,7 +199,7 @@ async function makePredictions(humanBid) {
   });
   state.players.forEach((player, index) => { player.prediction = predictions[index]; });
   state.phase = "play";
-  state.message = `${state.players[state.leader].name} leads the first trick.`;
+  state.message = `${leadText(state.players[state.leader])} the first trick.`;
   render();
   await wait(500);
   runBotTurns();
@@ -244,7 +245,7 @@ async function finishTrick() {
   state.plays = [];
   if (state.players.every((player) => player.hand.length === 0)) finishRound();
   else {
-    state.message = `${state.players[state.leader].name} leads.`;
+    state.message = `${leadText(state.players[state.leader])}.`;
     render();
     runBotTurns();
   }
