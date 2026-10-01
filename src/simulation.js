@@ -2,6 +2,7 @@ import {
   ROUND_SIZES,
   chooseBotCard,
   createDeck,
+  predictionDistribution,
   shuffle,
   trickWinner,
 } from "./game.js";
@@ -87,6 +88,7 @@ export function chooseSimulationBid({ players, playerIndex, leader, dealer, trum
   const player = players[playerIndex];
   const distribution = player.hand.length === 1
     ? blindDistribution(players, playerIndex, leader, trumpCard)
+    : predictionDistribution(player.hand, trumpCard.suit, players.length, dealer === playerIndex);
     : binomialDistribution(player.hand.length, expectedTricks(player.hand, trumpCard.suit, players.length, dealer === playerIndex));
   return bestBid(distribution, variant);
 }

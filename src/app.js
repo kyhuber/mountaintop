@@ -140,7 +140,7 @@ function gameMarkup() {
       <h3 id="bid-hand-label">${blindBid ? "Your card · hidden until bids are locked" : "Your hand"}</h3>
       <div class="bid-hand" role="group" aria-labelledby="bid-hand-label">${blindBid ? hiddenCardMarkup() : human.hand.map((card) => cardMarkup(card, { displayOnly: true })).join("")}</div>
       <div class="bid-options">${predictionOptions}</div>
-      <small><b>Mountaintop</b> scores +10 if you take no tricks, but −10 if you take any.</small>
+      <small><b>Mountaintop</b> scores +6 if you take no tricks, but −6 if you take any.</small>
     </section></div>` : ""}
     ${state.phase === "roundEnd" || state.phase === "gameEnd" ? summaryMarkup() : ""}
   </div>`;
@@ -160,7 +160,7 @@ function summaryMarkup() {
 }
 
 function rulesMarkup() {
-  return `<div class="modal-backdrop" id="rules-modal"><section class="rules-panel"><button class="close" aria-label="Close">×</button><p class="eyebrow">The trail guide</p><h2>How to play</h2><h3>Predict</h3><p>Everyone secretly predicts how many tricks they’ll win. A bid of zero is called Mountaintop.</p><h3>One-card blind round</h3><p>Your card stays hidden while you bid Mountaintop or 1. You can see your opponents’ cards and trump. Each computer also bids without seeing its own card. All bids lock together, then your card is revealed.</p><h3>Play</h3><p>Follow the led suit if you can. The highest trump wins; otherwise, the highest card in the led suit wins. The trick winner leads next.</p><h3>Score</h3><p>Hit your bid for 5 points plus each trick. Miss it and score only your tricks. A successful Mountaintop is +10; a failed one is −10.</p></section></div>`;
+  return `<div class="modal-backdrop" id="rules-modal"><section class="rules-panel"><button class="close" aria-label="Close">×</button><p class="eyebrow">The trail guide</p><h2>How to play</h2><h3>Predict</h3><p>Everyone secretly predicts how many tricks they’ll win. A bid of zero is called Mountaintop.</p><h3>One-card blind round</h3><p>Your card stays hidden while you bid Mountaintop or 1. You can see your opponents’ cards and trump. Each computer also bids without seeing its own card. All bids lock together, then your card is revealed.</p><h3>Play</h3><p>Follow the led suit if you can. The highest trump wins; otherwise, the highest card in the led suit wins. The trick winner leads next.</p><h3>Score</h3><p>Hit your bid for 5 points plus each trick. Miss it and lose 1 point for every trick above or below your bid. A successful Mountaintop is +6; a failed one is −6.</p></section></div>`;
 }
 
 function render() {

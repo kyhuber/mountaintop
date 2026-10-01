@@ -59,6 +59,7 @@ test("a restored blind bid hides the human card everywhere and reveals it only a
       await withApp(game, ({ app, buttons, saved }) => {
         assert.match(app.innerHTML, /Make a blind call/);
         assert.match(app.innerHTML, /Opponents’ cards/);
+        assert.match(app.innerHTML, /scores \+6 if you take no tricks, but −6 if you take any/);
         assert.doesNotMatch(app.innerHTML, /2_of_spades\.svg|aria-label="2 of spades"|data-card-index=/);
         assert.equal((app.innerHTML.match(/class="card card-back"/g) || []).length, 2);
         for (const opponent of game.players.slice(1)) assert.ok(app.innerHTML.includes(`${opponent.hand[0].rank}_of_spades.svg`));

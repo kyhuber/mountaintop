@@ -74,6 +74,10 @@ Do not change the production rules based on simulation alone. Advance these thre
 
 For human sessions, record perceived tension, clarity, whether unwanted tricks felt strategically meaningful, willingness to call Mountaintop after a failure, and how many players felt capable of winning before the final round. Those observations should decide whether the strategic texture of symmetric scoring is worth its larger simulated score separation.
 
+## Production Decision
+
+Following review of the tradeoffs, production adopted **symmetric +6/-6**. This option makes the bid matter throughout a hand by penalizing misses in either direction, while the simulation retained materially closer games than either +10/-10 baseline and produced the strongest recovery rate among players who failed a Mountaintop. The production bot's one-card expected-value comparison was updated for the same scoring rule. Human play feedback should continue to be recorded; the deterministic control results remain available if the decision needs to be revisited.
+
 ## Limitations
 
 - Simulated competitiveness is measurable; “fun” is not. The metrics are proxies that narrow the playtest candidates.

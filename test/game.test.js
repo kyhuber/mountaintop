@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { bestPrediction, createDeck, legalCards, trickWinner, scoreRound, leadText, ROUND_SIZES } from "../src/game.js";
 import { createDeck, legalCards, trickWinner, scoreRound, leadText, ROUND_SIZES } from "../src/game.js";
 
 const card = (rank, suit, value) => ({ id: `${rank}${suit}`, rank, suit, value });
@@ -40,10 +41,23 @@ test("highest card in led suit wins when no trump is played", () => {
 
 test("round scoring handles exact bids, misses, and Mountaintop", () => {
   assert.equal(scoreRound(3, 3), 8);
-  assert.equal(scoreRound(3, 2), 2);
-  assert.equal(scoreRound(0, 0), 10);
-  assert.equal(scoreRound(0, 1), -10);
-  assert.equal(scoreRound(0, 5), -10);
+  assert.equal(scoreRound(3, 2), -1);
+  assert.equal(scoreRound(3, 4), -1);
+  assert.equal(scoreRound(3, 1), -2);
+  assert.equal(scoreRound(3, 5), -2);
+  assert.equal(scoreRound(0, 0), 6);
+  assert.equal(scoreRound(0, 1), -6);
+  assert.equal(scoreRound(0, 5), -6);
+});
+
+test("prediction selection maximizes expected value under production scoring", () => {
+  assert.equal(bestPrediction([0.8, 0.2]), 0);
+  assert.equal(bestPrediction([0.2, 0.8]), 1);
+});
+
+test("lead text uses the correct grammar for human and computer players", () => {
+  assert.equal(leadText({ name: "You", human: true }), "You lead");
+  assert.equal(leadText({ name: "Mira", human: false }), "Mira leads");
 });
 
 test("lead text uses the correct grammar for human and computer players", () => {
