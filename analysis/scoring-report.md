@@ -2,18 +2,18 @@
 
 ## Question
 
-This experiment compares the production scoring rule with a symmetric miss penalty and tests four Mountaintop reward/penalty schedules. The goal is to identify candidates that keep games competitive while preserving meaningful, exciting Mountaintop decisions.
+Which scoring rule keeps Mountaintop games competitive to the final round while preserving a meaningful, exciting Mountaintop decision? This experiment compares two ways of scoring a missed nonzero bid and four Mountaintop reward/penalty schedules, then selects a production rule from the results.
 
 ## Method
 
 - **Ordinary scoring models**:
-  - `current`: exact bids score `5 + tricks`; misses score the tricks taken.
+  - `tricks-taken` (the original rule, `current` in the result files): exact bids score `5 + tricks`; misses score the tricks taken.
   - `symmetric`: exact bids score `5 + tricks`; misses score `-abs(bid - tricks)`.
 - **Mountaintop schedules**: `+10/-10`, `+8/-8`, `+6/-6`, and `+10/-6`.
-- **Sample**: 5,000 complete eleven-round games for each player count from two through eight, for each of eight variants. That is 35,000 games per variant and 280,000 games overall.
+- **Sample**: 5,000 complete eleven-round games for each supported table size (two through five players), for each of eight variants. That is 20,000 games per variant and 160,000 games overall. The player range matches the production cap so the evidence describes tables players can actually choose.
 - **Pairing and reproducibility**: every variant used seed `20261001` and the same deterministic deal for the same player-count/game/round coordinates.
-- **Parallelism**: all eight variants ran concurrently in Node worker threads. The recorded run completed in 84.5 seconds.
-- **Agent behavior**: simulated players select the bid with the highest expected score using a common hand-strength probability approximation. Blind-round agents enumerate possible hidden cards without looking at their own card. Card play uses the production `chooseBotCard` policy.
+- **Parallelism**: all eight variants ran concurrently in Node worker threads. The recorded run completed in 21.5 seconds.
+- **Agent behavior**: simulated players select the bid with the highest expected score under the variant being tested, using the same hand-strength probability model (`predictionDistribution`) as the production bots. Blind-round agents enumerate possible hidden cards without looking at their own card. Card play uses the production `chooseBotCard` policy.
 
 The complete machine-readable output is in [`scoring-results.json`](./scoring-results.json).
 
@@ -23,68 +23,62 @@ The complete machine-readable output is in [`scoring-results.json`](./scoring-re
 
 | Variant | Winner margin | Final spread | Competitive finals | Reachable finals | Mountaintop call rate | Recall after failure | Failed caller win rate |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Current, +10/-10 | 12.29 | 38.22 | 58.4% | 84.5% | 42.1% | 40.8% | 11.7% |
-| Current, +8/-8 | 9.78 | 30.75 | 67.8% | 88.1% | 40.7% | 39.2% | 11.2% |
-| **Current, +6/-6** | **7.66** | **24.26** | **76.7%** | **91.5%** | 38.2% | 36.0% | 10.8% |
-| Current, +10/-6 | 11.14 | 34.75 | 61.4% | 80.9% | 48.4% | 47.2% | 13.0% |
-| Symmetric, +10/-10 | 14.07 | 42.73 | 52.6% | 80.5% | 44.6% | 43.2% | 13.1% |
-| Symmetric, +8/-8 | 11.66 | 35.36 | 60.8% | 83.7% | 43.2% | 41.9% | 13.4% |
-| **Symmetric, +6/-6** | **9.67** | **29.10** | **68.1%** | **86.0%** | 42.0% | 40.5% | **14.5%** |
-| Symmetric, +10/-6 | 13.14 | 40.06 | 54.8% | 75.3% | **52.3%** | **51.7%** | 14.4% |
+| Tricks-taken misses, +10/-10 | 15.72 | 34.55 | 46.5% | 75.1% | 38.8% | 39.3% | 19.2% |
+| Tricks-taken misses, +8/-8 | 12.52 | 27.70 | 55.7% | 80.3% | 37.2% | 37.6% | 18.5% |
+| **Tricks-taken misses, +6/-6 (production)** | **9.62** | **21.45** | **66.4%** | **85.5%** | 34.4% | 34.1% | 17.5% |
+| Tricks-taken misses, +10/-6 | 13.95 | 30.55 | 50.0% | 71.3% | 43.4% | 44.3% | 21.6% |
+| Symmetric misses, +10/-10 | 17.98 | 38.68 | 41.4% | 70.2% | 40.3% | 41.0% | 21.5% |
+| Symmetric misses, +8/-8 | 14.97 | 32.12 | 48.5% | 73.8% | 39.2% | 39.9% | 21.7% |
+| Symmetric misses, +6/-6 | 12.37 | 26.46 | 56.0% | 77.1% | 38.5% | 39.0% | 22.7% |
+| Symmetric misses, +10/-6 | 16.55 | 35.87 | 43.9% | 64.3% | 48.0% | 49.1% | 23.8% |
 
-Mountaintop success rates were between 82.9% and 86.8% across these automated policies. The high rate is a warning that call frequency should not be interpreted as a forecast of human behavior: the agents use a consistent probability model and call Mountaintop only when it has the best modeled expected score.
+Mountaintop success rates were between 70.5% and 76.4% across these automated policies, so call frequency should not be read as a forecast of human behavior: the agents call Mountaintop only when it has the best modeled expected score.
+
+### Winner margin by table size
+
+The ranking holds at every supported player count. Smaller tables produce wider margins under every rule because fewer players share the points.
+
+| Players | Tricks-taken +6/-6 | Symmetric +6/-6 | Tricks-taken +10/-10 (original) |
+| ---: | ---: | ---: | ---: |
+| 2 | 15.00 | 18.57 | 24.33 |
+| 3 | 9.86 | 13.16 | 16.32 |
+| 4 | 7.42 | 9.75 | 12.17 |
+| 5 | 6.19 | 8.01 | 10.05 |
 
 ## Findings
 
-### 1. Symmetric misses did not improve simulated closeness
+### 1. Tricks-taken misses produced closer games than symmetric misses at every Mountaintop value
 
-At every matching Mountaintop value, symmetric scoring increased the winner's margin and final score spread and reduced the share of competitive finals. With Mountaintop at `+10/-10`, competitive finals fell from 58.4% to 52.6%, while the average winner margin rose from 12.29 to 14.07.
+At every matching Mountaintop schedule, symmetric scoring widened the winner's margin and final spread and reduced the share of competitive finals. At `+6/-6`, competitive finals fell from 66.4% to 56.0% and the average winner margin rose from 9.62 to 12.37 when misses were penalized symmetrically.
 
-This does **not** prove symmetric scoring is less fun. It adds an accuracy consequence and may make trick-by-trick decisions more meaningful, qualities the closeness metrics cannot measure. It does show that symmetric scoring should not be adopted on the assumption that it naturally keeps more players in contention.
+Symmetric scoring does add an accuracy consequence that the closeness metrics cannot value, but the simulation gives no evidence that it keeps more players in contention. It does the opposite.
 
 ### 2. Lowering both Mountaintop outcomes had the largest competitiveness effect
 
-Moving from `+10/-10` to `+6/-6` produced the closest games in both ordinary-scoring families. Under current ordinary scoring, competitive finals rose from 58.4% to 76.7% and average winner margin fell from 12.29 to 7.66. Under symmetric scoring, competitive finals rose from 52.6% to 68.1% and margin fell from 14.07 to 9.67.
-
-The tradeoff is that a smaller reward made rational agents call Mountaintop less often and made prior failures less likely to be followed by another call. That can improve score balance while weakening the dramatic identity of the bid.
+Moving from `+10/-10` to `+6/-6` produced the closest games in both ordinary-scoring families. With tricks-taken misses, competitive finals rose from 46.5% to 66.4% and the average winner margin fell from 15.72 to 9.62. The cost is a modest drop in Mountaintop calls (38.8% to 34.4% of bids) and in repeat calls after a failure.
 
 ### 3. Keeping +10 while reducing only the loss encouraged risk, not closeness
 
-The `+10/-6` schedule generated the most Mountaintop calls and the highest recall after a prior failure. It also slightly improved failed callers' eventual win rate. However, its large successful reward preserved wide score spreads: it was only modestly more competitive than `+10/-10` under current scoring and remained the second-least competitive symmetric variant.
+The `+10/-6` schedules generated the most Mountaintop calls and the highest recall after a failure, and gave failed callers the best eventual win rate. Their large successful reward preserved wide score spreads, so they were only modestly more competitive than `+10/-10`.
 
-This schedule is a strong candidate if the primary design goal is to keep Mountaintop prominent and psychologically approachable. It is not the best candidate if close final rounds are the priority.
+### 4. No rule dominates every outcome
 
-### 4. The simulator reveals a real design tradeoff
-
-No tested rule dominates every desired outcome:
-
-- **Current +6/-6** maximizes late-game closeness.
-- **Symmetric +6/-6** adds bid-accuracy consequences while remaining materially closer than either `+10/-10` baseline.
-- **Current +10/-6** preserves the existing ordinary rule and encourages repeat Mountaintop risk with a moderate competitiveness improvement.
-- **Symmetric +10/-6** most strongly encourages Mountaintop calls and repeat calls, but produces relatively wide games.
-
-## Recommendation
-
-Do not change the production rules based on simulation alone. Advance these three variants to structured human playtests alongside the current control:
-
-1. **Current +10/-10** — control.
-2. **Current +6/-6** — strongest simulated competitiveness.
-3. **Symmetric +6/-6** — best symmetric compromise and strongest failed-caller recovery result.
-4. **Current +10/-6** — strongest compromise for preserving a dramatic `+10` reward while reducing reluctance after failure.
-
-For human sessions, record perceived tension, clarity, whether unwanted tricks felt strategically meaningful, willingness to call Mountaintop after a failure, and how many players felt capable of winning before the final round. Those observations should decide whether the strategic texture of symmetric scoring is worth its larger simulated score separation.
+- **Tricks-taken +6/-6** maximizes late-game closeness on every measure.
+- **Symmetric +6/-6** adds bid-accuracy consequences and gives failed callers the second-best recovery rate, but is materially less close.
+- **Tricks-taken +10/-6** keeps Mountaintop most prominent while improving on the original rule.
 
 ## Production Decision
 
-Following review of the tradeoffs, production adopted **symmetric +6/-6**. This option makes the bid matter throughout a hand by penalizing misses in either direction, while the simulation retained materially closer games than either +10/-10 baseline and produced the strongest recovery rate among players who failed a Mountaintop. The production bot's one-card expected-value comparison was updated for the same scoring rule. Human play feedback should continue to be recorded; the deterministic control results remain available if the decision needs to be revisited.
+Structured human playtests are not available at this stage, so the production rule is inferred from the simulation alone. Production uses **tricks-taken misses with Mountaintop at +6/-6**. It leads every competitiveness metric at every supported table size: the smallest winner margin and final spread, the highest competitive-final rate, and the highest reachable-final rate. Its Mountaintop call rate is the lowest of the eight variants, but the gap to the others is a few percentage points, and a +6/-6 Mountaintop still swings twelve points between success and failure.
+
+The earlier interim choice of symmetric +6/-6 was based on the strategic argument that misses should matter in both directions. That argument remains untested; the measured cost is roughly three extra points of winner margin and ten percentage points fewer competitive finals. If human feedback later shows that unwanted tricks feel inconsequential, symmetric scoring is the first alternative to revisit, and `scoreRound` in `src/game.js` is the single place the rule lives. The production bots derive their bids from `scoreRound`, so any change there re-tunes them automatically.
 
 ## Limitations
 
-- Simulated competitiveness is measurable; “fun” is not. The metrics are proxies that narrow the playtest candidates.
-- The bidding distribution is an approximation, not a learned model of human judgment.
+- Simulated competitiveness is measurable; “fun” is not. The metrics are proxies.
+- The bidding distribution is an approximation, not a learned model of human judgment, and the bots' card play is a lightweight heuristic that always leads its lowest-risk card.
 - All agents optimize expected points. Human players may value risk, table drama, or loss avoidance differently.
-- The production card-play heuristic is intentionally lightweight and may not exploit every strategic consequence of symmetric penalties.
-- Results describe the tested full-game schedule and player counts; they should not be generalized to other formats without rerunning the experiment.
+- Results describe the eleven-round schedule and two-to-five-player tables; rerun the experiment before generalizing to other formats or larger tables.
 
 ## Reproduction
 

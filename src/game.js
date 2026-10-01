@@ -3,13 +3,16 @@ export const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K
 export const ROUND_SIZES = [6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6];
 export const BOT_NAMES = ["Mira", "Theo", "June", "Felix", "Sage", "Wren", "Otis"];
 export const MOUNTAINTOP_POINTS = 6;
+// Hard cap while the table layout is tuned: this is the largest table that renders cleanly on a phone.
+export const MIN_PLAYERS = 2;
+export const MAX_PLAYERS = 5;
 
 export function leadText(player) {
   return player.human ? "You lead" : `${player.name} leads`;
 }
 
-export function leadText(player) {
-  return player.human ? "You lead" : `${player.name} leads`;
+export function winText(player) {
+  return player.human ? "You win the trick" : `${player.name} wins the trick`;
 }
 
 export function createDeck() {
@@ -39,9 +42,12 @@ export function trickWinner(plays, trumpSuit) {
   return contenders.reduce((best, play) => (play.card.value > best.card.value ? play : best));
 }
 
+// Production rule, selected from the deterministic scoring simulation: an exact
+// nonzero bid scores five plus tricks, a missed bid scores only the tricks taken,
+// and Mountaintop (a bid of zero) scores plus or minus MOUNTAINTOP_POINTS.
 export function scoreRound(prediction, tricks) {
   if (prediction === 0) return tricks === 0 ? MOUNTAINTOP_POINTS : -MOUNTAINTOP_POINTS;
-  return prediction === tricks ? 5 + tricks : -Math.abs(prediction - tricks);
+  return prediction === tricks ? 5 + tricks : tricks;
 }
 
 export function predictionDistribution(hand, trumpSuit, playerCount, isDealer) {
@@ -126,6 +132,9 @@ export function sortHand(hand, trumpSuit) {
 }
 
 export function createPlayers(count) {
+  if (!Number.isInteger(count) || count < MIN_PLAYERS || count > MAX_PLAYERS) {
+    throw new RangeError(`Player count must be between ${MIN_PLAYERS} and ${MAX_PLAYERS}`);
+  }
   return [
     { name: "You", human: true, score: 0 },
     ...BOT_NAMES.slice(0, count - 1).map((name) => ({ name, human: false, score: 0 })),

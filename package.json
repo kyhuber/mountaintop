@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.js",
-    "build": "node scripts/build.js",
     "test": "node --test",
     "simulate:scoring": "node scripts/simulate-scoring.js"
   }

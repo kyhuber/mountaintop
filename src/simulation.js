@@ -1,4 +1,6 @@
 import {
+  MAX_PLAYERS,
+  MIN_PLAYERS,
   ROUND_SIZES,
   chooseBotCard,
   createDeck,
@@ -6,6 +8,9 @@ import {
   shuffle,
   trickWinner,
 } from "./game.js";
+
+// Every table size the production app allows, so simulation evidence matches what players can actually choose.
+export const PRODUCTION_PLAYER_COUNTS = Array.from({ length: MAX_PLAYERS - MIN_PLAYERS + 1 }, (_, i) => MIN_PLAYERS + i);
 
 export const SCORING_VARIANTS = [
   ...[10, 8, 6].map((value) => ({ id: `current-m${value}`, miss: "current", mountainReward: value, mountainPenalty: value })),
@@ -38,28 +43,6 @@ function mixSeed(seed, gameIndex, round) {
   return (value ^ (value >>> 16)) >>> 0;
 }
 
-function expectedTricks(hand, trumpSuit, playerCount, isDealer) {
-  let expected = 0;
-  for (const card of hand) {
-    if (card.suit === trumpSuit) expected += card.value >= 10 ? 0.9 : card.value >= 7 ? 0.65 : 0.35;
-    else if (card.value === 12) expected += 0.72 - (playerCount - 2) * 0.055;
-    else if (card.value === 11) expected += 0.4 - (playerCount - 2) * 0.04;
-    else if (card.value === 10) expected += 0.18;
-  }
-  return Math.max(0, Math.min(hand.length, expected + (isDealer ? 0.08 : 0)));
-}
-
-function binomialDistribution(size, expected) {
-  if (size === 0) return [1];
-  const probability = Math.max(0.001, Math.min(0.999, expected / size));
-  const distribution = Array(size + 1).fill(0);
-  distribution[0] = (1 - probability) ** size;
-  for (let tricks = 1; tricks <= size; tricks += 1) {
-    distribution[tricks] = distribution[tricks - 1] * ((size - tricks + 1) / tricks) * (probability / (1 - probability));
-  }
-  return distribution;
-}
-
 function bestBid(distribution, variant) {
   let best = { bid: 0, value: -Infinity };
   for (let bid = 0; bid < distribution.length; bid += 1) {
@@ -89,7 +72,6 @@ export function chooseSimulationBid({ players, playerIndex, leader, dealer, trum
   const distribution = player.hand.length === 1
     ? blindDistribution(players, playerIndex, leader, trumpCard)
     : predictionDistribution(player.hand, trumpCard.suit, players.length, dealer === playerIndex);
-    : binomialDistribution(player.hand.length, expectedTricks(player.hand, trumpCard.suit, players.length, dealer === playerIndex));
   return bestBid(distribution, variant);
 }
 
@@ -199,7 +181,7 @@ export function simulateGame({ variant, playerCount, gameIndex, seed = 20261001 
   };
 }
 
-export function simulateVariant({ variant, gamesPerPlayerCount, seed = 20261001, playerCounts = [2, 3, 4, 5, 6, 7, 8] }) {
+export function simulateVariant({ variant, gamesPerPlayerCount, seed = 20261001, playerCounts = PRODUCTION_PLAYER_COUNTS }) {
   const totals = Object.fromEntries([
     "games", "players", "score", "scoreSquared", "winnerMargin", "finalSpread", "leadChanges", "midpointComebacks",
     "finalRoundContenders", "competitiveFinals", "finalRoundReachContenders", "competitiveFinalReach", "exactBids", "playerRounds", "mountainCalls", "mountainSuccesses",

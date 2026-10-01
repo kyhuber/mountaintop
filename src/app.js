@@ -1,5 +1,8 @@
 import {
   ROUND_SIZES,
+  MIN_PLAYERS,
+  MAX_PLAYERS,
+  MOUNTAINTOP_POINTS,
   createDeck,
   createPlayers,
   shuffle,
@@ -11,29 +14,57 @@ import {
   estimateBlindPrediction,
   chooseBotCard,
   leadText,
+  winText,
 } from "./game.js";
 
 const app = document.querySelector("#app");
-const SAVE_KEY = "mountaintop-game";
+// Bump the suffix whenever the saved shape changes so stale saves are discarded instead of crashing.
+const SAVE_KEY = "mountaintop-game-v2";
+const PHASES = new Set(["predict", "play", "trickEnd", "roundEnd", "gameEnd"]);
+const BOT_DELAY = 650;
 let state = loadGame();
-let timer = null;
+let timerToken = 0;
 
 const suitName = { "♠": "spades", "♥": "hearts", "♦": "diamonds", "♣": "clubs" };
 const rankName = { A: "ace", J: "jack", Q: "queen", K: "king" };
 const isRed = (suit) => suit === "♥" || suit === "♦";
-const wait = (ms) => new Promise((resolve) => { timer = setTimeout(resolve, ms); });
+
+// Resolves with false when a newer action (new game, reload) has cancelled the wait.
+function wait(ms) {
+  const token = ++timerToken;
+  return new Promise((resolve) => setTimeout(() => resolve(token === timerToken), ms));
+}
+
+function isCard(card) {
+  return Boolean(card) && typeof card.id === "string" && typeof card.suit === "string" && Number.isInteger(card.value);
+}
+
+function isValidSave(saved) {
+  if (!saved || typeof saved !== "object" || !PHASES.has(saved.phase)) return false;
+  if (!Number.isInteger(saved.round) || saved.round < 0 || saved.round >= ROUND_SIZES.length) return false;
+  if (!Array.isArray(saved.players) || saved.players.length < MIN_PLAYERS || saved.players.length > MAX_PLAYERS) return false;
+  if (!saved.players[0]?.human || !saved.players.every((p) => typeof p.name === "string" && Array.isArray(p.hand) && p.hand.every(isCard) && Number.isInteger(p.score))) return false;
+  if (!isCard(saved.trumpCard) || !Array.isArray(saved.plays) || !saved.plays.every((play) => isCard(play.card) && Number.isInteger(play.playerIndex))) return false;
+  const count = saved.players.length;
+  return [saved.dealer, saved.leader, saved.turn].every((index) => Number.isInteger(index) && index >= 0 && index < count);
+}
 
 function loadGame() {
   try {
-    return JSON.parse(localStorage.getItem(SAVE_KEY)) || null;
+    const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
+    return isValidSave(saved) ? saved : null;
   } catch {
     return null;
   }
 }
 
 function saveGame() {
-  if (state) localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-  else localStorage.removeItem(SAVE_KEY);
+  try {
+    if (state) localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    else localStorage.removeItem(SAVE_KEY);
+  } catch {
+    // Private browsing or a full quota: the game still plays, it just will not resume.
+  }
 }
 
 function newGame(playerCount) {
@@ -57,7 +88,7 @@ function startRound() {
   const handSize = ROUND_SIZES[state.round];
   const deck = shuffle(createDeck());
   state.players.forEach((player) => {
-    player.hand = sortHand(deck.splice(0, handSize), null);
+    player.hand = deck.splice(0, handSize);
     player.prediction = null;
     player.tricks = 0;
   });
@@ -85,6 +116,10 @@ function hiddenCardMarkup() {
   return '<span class="card card-back" role="img" aria-label="Your card is hidden until all bids are locked"><span aria-hidden="true">▲</span></span>';
 }
 
+function bidLabel(prediction) {
+  return prediction == null ? "–" : prediction === 0 ? "M" : prediction;
+}
+
 function playerMarkup(player, index) {
   const active = state.phase === "play" && state.turn === index;
   const dealer = state.dealer === index;
@@ -92,7 +127,7 @@ function playerMarkup(player, index) {
     <div class="avatar">${player.name[0]}</div>
     <div class="player-info"><strong>${player.name}</strong><span>${player.score} pts</span></div>
     ${dealer ? '<span class="dealer" title="Dealer">D</span>' : ""}
-    <div class="player-stats"><span>Bid <b>${player.prediction == null ? "–" : player.prediction === 0 ? "M" : player.prediction}</b></span><span>Tricks <b>${player.tricks ?? 0}</b></span></div>
+    <div class="player-stats"><span>Bid <b>${bidLabel(player.prediction)}</b></span><span>Tricks <b>${player.tricks ?? 0}</b></span></div>
   </article>`;
 }
 
@@ -104,7 +139,7 @@ function setupMarkup() {
     <p class="intro">Climb carefully. Call your tricks, play your hand, and risk it all on the Mountaintop.</p>
     <div class="setup-card">
       <label for="player-count">How many players?</label>
-      <div class="stepper"><button id="minus" aria-label="Fewer players">−</button><output id="count">4</output><button id="plus" aria-label="More players">+</button></div>
+      <div class="stepper"><button id="minus" aria-label="Fewer players">−</button><output id="count" for="minus plus">4</output><button id="plus" aria-label="More players">+</button></div>
       <p>You’ll play against <span id="bot-count">3 computer players</span>.</p>
       <button class="primary" id="start">Deal the cards <span>→</span></button>
     </div>
@@ -112,26 +147,36 @@ function setupMarkup() {
   </section>`;
 }
 
+function tableCenterMarkup() {
+  if (state.plays.length) {
+    return state.plays.map((play) => `<div class="played-card"><span>${state.players[play.playerIndex].name}</span>${cardMarkup(play.card, { small: true })}</div>`).join("");
+  }
+  return `<div class="empty-trick"><span>♠</span><p>${state.phase === "predict" ? "Predictions first" : "Waiting for the lead"}</p></div>`;
+}
+
 function gameMarkup() {
   const human = state.players[0];
   const blindBid = state.phase === "predict" && ROUND_SIZES[state.round] === 1;
-  const legalIds = new Set(legalCards(human.hand, state.plays[0]?.card.suit).map((card) => card.id));
+  const humanTurn = state.phase === "play" && state.turn === 0;
+  const legalIds = new Set(humanTurn ? legalCards(human.hand, state.plays[0]?.card.suit).map((card) => card.id) : []);
   const predictionOptions = Array.from({ length: human.hand.length + 1 }, (_, i) => `<button class="bid ${i === 0 ? "mountain-bid" : ""}" data-bid="${i}">${i === 0 ? "<span>▲</span> Mountaintop" : i}</button>`).join("");
   const opponents = state.players.slice(1).map((player, i) => playerMarkup(player, i + 1)).join("");
-  const tableCards = state.plays.map((play) => `<div class="played-card"><span>${state.players[play.playerIndex].name}</span>${cardMarkup(play.card, { small: true })}</div>`).join("");
   const roundLabel = `Round ${state.round + 1} of ${ROUND_SIZES.length}`;
+  const trickEnd = state.phase === "trickEnd";
 
   return `<div class="game-shell">
     <header><div class="logo"><span>▲</span><div><b>Mountaintop</b><small>Huber Brothers</small></div></div><div class="round-progress"><span>${roundLabel}</span><div>${ROUND_SIZES.map((_, i) => `<i class="${i <= state.round ? "done" : ""}"></i>`).join("")}</div></div><button class="icon-button" id="new-game" aria-label="New game">↻</button></header>
     <section class="opponents">${opponents}</section>
-    <section class="felt">
+    <section class="felt ${trickEnd ? "tappable" : ""}" ${trickEnd ? 'id="felt"' : ""}>
       <div class="trump"><span>Trump</span>${cardMarkup(state.trumpCard, { small: true })}</div>
-      <div class="table-center">${tableCards || `<div class="empty-trick"><span>♠</span><p>${state.phase === "predict" ? "Predictions first" : "Waiting for the lead"}</p></div>`}</div>
-      <div class="status-pill">${state.message}</div>
+      <div class="table-center">${tableCenterMarkup()}</div>
+      ${trickEnd
+        ? `<button class="status-pill continue-pill" id="continue-trick">${state.message} <b>Tap to continue →</b></button>`
+        : `<div class="status-pill" role="status">${state.message}</div>`}
     </section>
     ${playerMarkup(human, 0)}
-    <section class="hand" aria-label="Your hand">${blindBid ? hiddenCardMarkup() : human.hand.map((card, index) => cardMarkup(card, { index, disabled: state.phase !== "play" || state.turn !== 0 || !legalIds.has(card.id) })).join("")}</section>
-    ${state.phase === "predict" ? `<div class="modal-backdrop bid-backdrop"><section class="bid-panel" aria-labelledby="bid-title">
+    <section class="hand" aria-label="Your hand">${blindBid ? hiddenCardMarkup() : human.hand.map((card, index) => cardMarkup(card, { index, disabled: !legalIds.has(card.id) })).join("")}</section>
+    ${state.phase === "predict" ? `<div class="modal-backdrop bid-backdrop"><section class="bid-panel" role="dialog" aria-modal="true" aria-labelledby="bid-title">
       <p class="eyebrow">Make your prediction · ${roundLabel}</p>
       <h2 id="bid-title">${blindBid ? "Make a blind call" : "How many tricks?"}</h2>
       <p>${blindBid ? "Your card is hidden. Study your opponents’ cards and trump, then make your call." : "Review your hand and trump, then choose your bid."}</p>
@@ -140,7 +185,7 @@ function gameMarkup() {
       <h3 id="bid-hand-label">${blindBid ? "Your card · hidden until bids are locked" : "Your hand"}</h3>
       <div class="bid-hand" role="group" aria-labelledby="bid-hand-label">${blindBid ? hiddenCardMarkup() : human.hand.map((card) => cardMarkup(card, { displayOnly: true })).join("")}</div>
       <div class="bid-options">${predictionOptions}</div>
-      <small><b>Mountaintop</b> scores +6 if you take no tricks, but −6 if you take any.</small>
+      <small>Hit your bid for 5 points plus each trick; miss it and you score only the tricks you took. <b>Mountaintop</b> scores +${MOUNTAINTOP_POINTS} if you take no tricks, but −${MOUNTAINTOP_POINTS} if you take any.</small>
     </section></div>` : ""}
     ${state.phase === "roundEnd" || state.phase === "gameEnd" ? summaryMarkup() : ""}
   </div>`;
@@ -148,39 +193,60 @@ function gameMarkup() {
 
 function summaryMarkup() {
   const isEnd = state.phase === "gameEnd";
-  const sorted = [...state.players].sort((a, b) => b.score - a.score);
-  const high = sorted[0].score;
-  const winners = sorted.filter((p) => p.score === high).map((p) => p.name);
-  return `<div class="modal-backdrop"><section class="score-panel">
+  const ranked = state.players.map((player, index) => ({ player, points: state.roundScores[index] })).sort((a, b) => b.player.score - a.player.score);
+  const high = ranked[0].player.score;
+  const winners = ranked.filter(({ player }) => player.score === high).map(({ player }) => player.name);
+  const rows = ranked.map(({ player, points }) => `<div><strong>${player.name}</strong><span>Bid ${bidLabel(player.prediction)} · ${player.tricks} trick${player.tricks === 1 ? "" : "s"}</span><b class="${points < 0 ? "negative" : ""}">${points > 0 ? "+" : ""}${points}</b><em>${player.score} total</em></div>`).join("");
+  return `<div class="modal-backdrop"><section class="score-panel" role="dialog" aria-modal="true" aria-labelledby="summary-title">
     <span class="panel-icon">${isEnd ? "◆" : "✓"}</span><p class="eyebrow">${isEnd ? "Journey complete" : `Round ${state.round + 1} complete`}</p>
-    <h2>${isEnd ? `${winners.join(" & ")} ${winners.length > 1 ? "share the summit" : "reached the summit"}!` : "The cards are in"}</h2>
-    <div class="score-table">${state.players.map((p) => { const rs = state.roundScores.find((s) => s.name === p.name); return `<div><strong>${p.name}</strong><span>Bid ${p.prediction === 0 ? "M" : p.prediction} · ${p.tricks} tricks</span><b class="${rs.points < 0 ? "negative" : ""}">${rs.points > 0 ? "+" : ""}${rs.points}</b><em>${p.score} total</em></div>`; }).join("")}</div>
+    <h2 id="summary-title">${isEnd ? `${winners.join(" & ")} ${winners.length > 1 ? "share the summit" : "reached the summit"}!` : "The cards are in"}</h2>
+    <div class="score-table">${rows}</div>
     <button class="primary" id="continue">${isEnd ? "Play again" : "Next round"} <span>→</span></button>
   </section></div>`;
 }
 
 function rulesMarkup() {
-  return `<div class="modal-backdrop" id="rules-modal"><section class="rules-panel"><button class="close" aria-label="Close">×</button><p class="eyebrow">The trail guide</p><h2>How to play</h2><h3>Predict</h3><p>Everyone secretly predicts how many tricks they’ll win. A bid of zero is called Mountaintop.</p><h3>One-card blind round</h3><p>Your card stays hidden while you bid Mountaintop or 1. You can see your opponents’ cards and trump. Each computer also bids without seeing its own card. All bids lock together, then your card is revealed.</p><h3>Play</h3><p>Follow the led suit if you can. The highest trump wins; otherwise, the highest card in the led suit wins. The trick winner leads next.</p><h3>Score</h3><p>Hit your bid for 5 points plus each trick. Miss it and lose 1 point for every trick above or below your bid. A successful Mountaintop is +6; a failed one is −6.</p></section></div>`;
+  return `<div class="modal-backdrop" id="rules-modal"><section class="rules-panel" role="dialog" aria-modal="true" aria-labelledby="rules-title"><button class="close" aria-label="Close">×</button><p class="eyebrow">The trail guide</p><h2 id="rules-title">How to play</h2><h3>Predict</h3><p>Everyone secretly predicts how many tricks they’ll win. A bid of zero is called Mountaintop.</p><h3>One-card blind round</h3><p>Your card stays hidden while you bid Mountaintop or 1. You can see your opponents’ cards and trump. Each computer also bids without seeing its own card. All bids lock together, then your card is revealed.</p><h3>Play</h3><p>Follow the led suit if you can. The highest trump wins; otherwise, the highest card in the led suit wins. The trick winner leads next.</p><h3>Score</h3><p>Hit your bid for 5 points plus each trick. Miss it and you score only the tricks you took. A successful Mountaintop is +${MOUNTAINTOP_POINTS}; a failed one is −${MOUNTAINTOP_POINTS}.</p></section></div>`;
 }
 
 function render() {
   saveGame();
   app.innerHTML = state ? gameMarkup() : setupMarkup();
   bindEvents();
+  // Move focus into whichever control the player needs next so keyboard and screen-reader users are not stranded.
+  document.querySelector(".bid-panel [data-bid], #continue-trick, #continue")?.focus({ preventScroll: true });
+}
+
+function openRules() {
+  app.insertAdjacentHTML("beforeend", rulesMarkup());
+  const modal = document.querySelector("#rules-modal");
+  const close = () => { modal.remove(); document.removeEventListener("keydown", onKey); document.querySelector("#rules-button")?.focus(); };
+  const onKey = (event) => { if (event.key === "Escape") close(); };
+  modal.querySelector(".close").addEventListener("click", close);
+  modal.addEventListener("click", (event) => { if (event.target === modal) close(); });
+  document.addEventListener("keydown", onKey);
+  modal.querySelector(".close").focus();
 }
 
 function bindEvents() {
-  document.querySelector("#new-game")?.addEventListener("click", () => { if (confirm("Leave this game and start over?")) { clearTimeout(timer); state = null; render(); } });
+  document.querySelector("#new-game")?.addEventListener("click", () => { if (confirm("Leave this game and start over?")) { timerToken += 1; state = null; render(); } });
   document.querySelectorAll("[data-bid]").forEach((button) => button.addEventListener("click", () => makePredictions(Number(button.dataset.bid))));
   document.querySelectorAll("[data-card-index]").forEach((button) => button.addEventListener("click", () => humanPlay(Number(button.dataset.cardIndex))));
   document.querySelector("#continue")?.addEventListener("click", nextRound);
+  document.querySelector("#felt")?.addEventListener("click", continueAfterTrick);
   if (!state) {
     let count = 4;
-    const update = () => { document.querySelector("#count").textContent = count; document.querySelector("#bot-count").textContent = `${count - 1} computer player${count === 2 ? "" : "s"}`; };
-    document.querySelector("#minus").addEventListener("click", () => { count = Math.max(2, count - 1); update(); });
-    document.querySelector("#plus").addEventListener("click", () => { count = Math.min(8, count + 1); update(); });
+    const update = () => {
+      document.querySelector("#count").textContent = count;
+      document.querySelector("#bot-count").textContent = `${count - 1} computer player${count === 2 ? "" : "s"}`;
+      document.querySelector("#minus").disabled = count <= MIN_PLAYERS;
+      document.querySelector("#plus").disabled = count >= MAX_PLAYERS;
+    };
+    document.querySelector("#minus").addEventListener("click", () => { count = Math.max(MIN_PLAYERS, count - 1); update(); });
+    document.querySelector("#plus").addEventListener("click", () => { count = Math.min(MAX_PLAYERS, count + 1); update(); });
     document.querySelector("#start").addEventListener("click", () => newGame(count));
-    document.querySelector("#rules-button").addEventListener("click", () => { app.insertAdjacentHTML("beforeend", rulesMarkup()); document.querySelector(".close").addEventListener("click", () => document.querySelector("#rules-modal").remove()); });
+    document.querySelector("#rules-button").addEventListener("click", openRules);
+    update();
   }
 }
 
@@ -201,15 +267,14 @@ async function makePredictions(humanBid) {
   state.phase = "play";
   state.message = `${leadText(state.players[state.leader])} the first trick.`;
   render();
-  await wait(500);
-  runBotTurns();
+  if (await wait(500)) runBotTurns();
 }
 
 function humanPlay(index) {
-  if (state.phase !== "play" || state.turn !== 0) return;
+  if (state.phase !== "play" || state.turn !== 0 || state.plays.length >= state.players.length) return;
   const card = state.players[0].hand[index];
   const legal = legalCards(state.players[0].hand, state.plays[0]?.card.suit);
-  if (!legal.includes(card)) return;
+  if (!card || !legal.includes(card)) return;
   playCard(0, card);
 }
 
@@ -219,43 +284,52 @@ function playCard(playerIndex, card) {
   state.plays.push({ playerIndex, card });
   state.message = `${player.name} played ${card.rank}${card.suit}.`;
   state.turn = (state.turn + 1) % state.players.length;
-  render();
   if (state.plays.length === state.players.length) finishTrick();
-  else runBotTurns();
+  else {
+    render();
+    runBotTurns();
+  }
 }
 
 async function runBotTurns() {
-  if (state.phase !== "play" || state.turn === 0 || state.plays.length === state.players.length) return;
+  if (state.phase !== "play" || state.turn === 0 || state.plays.length >= state.players.length) return;
   const index = state.turn;
-  await wait(650);
+  if (!(await wait(BOT_DELAY))) return;
   if (state.phase !== "play" || state.turn !== index) return;
   const player = state.players[index];
   const card = chooseBotCard({ hand: player.hand, plays: state.plays, trumpSuit: state.trumpCard.suit, prediction: player.prediction, tricks: player.tricks });
   playCard(index, card);
 }
 
-async function finishTrick() {
+// The completed trick stays on the table until the player taps, so nothing can be missed and a reload here simply resumes.
+function finishTrick() {
   const winner = trickWinner(state.plays, state.trumpCard.suit);
   state.players[winner.playerIndex].tricks += 1;
   state.leader = winner.playerIndex;
   state.turn = winner.playerIndex;
-  state.message = `${state.players[winner.playerIndex].name} wins the trick.`;
+  state.phase = "trickEnd";
+  state.message = `${winText(state.players[winner.playerIndex])}.`;
   render();
-  await wait(1100);
+}
+
+function continueAfterTrick() {
+  if (state.phase !== "trickEnd") return;
   state.plays = [];
-  if (state.players.every((player) => player.hand.length === 0)) finishRound();
-  else {
-    state.message = `${leadText(state.players[state.leader])}.`;
-    render();
-    runBotTurns();
+  if (state.players.every((player) => player.hand.length === 0)) {
+    finishRound();
+    return;
   }
+  state.phase = "play";
+  state.message = `${leadText(state.players[state.leader])}.`;
+  render();
+  runBotTurns();
 }
 
 function finishRound() {
   state.roundScores = state.players.map((player) => {
     const points = scoreRound(player.prediction, player.tricks);
     player.score += points;
-    return { name: player.name, points };
+    return points;
   });
   state.phase = state.round === ROUND_SIZES.length - 1 ? "gameEnd" : "roundEnd";
   state.message = "Round complete.";
