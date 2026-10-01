@@ -15,6 +15,28 @@ export function winText(player) {
   return player.human ? "You win the trick" : `${player.name} wins the trick`;
 }
 
+export function playText(player, card) {
+  return `${player.human ? "You" : player.name} played ${card.rank}${card.suit}.`;
+}
+
+// Public table talk: how a player stands against their bid given the tricks still to be played.
+// Every input here is visible to everyone at the table, so it leaks nothing.
+export function bidStatus(player, tricksRemaining = player.hand.length) {
+  const { prediction, tricks } = player;
+  if (prediction == null) return null;
+  if (prediction === 0) return tricks === 0 ? { key: "holds", label: "Holds" } : { key: "fell", label: "Fell" };
+  if (tricks > prediction) return { key: "over", label: `Over by ${tricks - prediction}` };
+  if (tricks === prediction) return tricksRemaining === 0 ? { key: "made", label: "Made it" } : { key: "at", label: "At bid" };
+  const needed = prediction - tricks;
+  if (needed > tricksRemaining) return { key: "out", label: "Out of reach" };
+  return { key: "needs", label: `Needs ${needed}` };
+}
+
+// True on the trick that breaks a Mountaintop: the caller has just taken their first trick.
+export function mountainJustFell(player) {
+  return player.prediction === 0 && player.tricks === 1;
+}
+
 export function createDeck() {
   return SUITS.flatMap((suit) => RANKS.map((rank, value) => ({ id: `${rank}${suit}`, rank, suit, value })));
 }

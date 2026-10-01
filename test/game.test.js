@@ -8,8 +8,11 @@ import {
   bestPrediction,
   createDeck,
   createPlayers,
+  bidStatus,
   leadText,
   legalCards,
+  mountainJustFell,
+  playText,
   scoreRound,
   trickWinner,
   winText,
@@ -87,4 +90,25 @@ test("player count is capped to the range that renders on a phone", () => {
   assert.throws(() => createPlayers(MAX_PLAYERS + 1), RangeError);
   assert.throws(() => createPlayers(MIN_PLAYERS - 1), RangeError);
   assert.throws(() => createPlayers(2.5), RangeError);
+});
+
+test("play text addresses the human as you", () => {
+  assert.equal(playText({ name: "Kai", human: true }, card("7", "♠", 5)), "You played 7♠.");
+  assert.equal(playText({ name: "Mira", human: false }, card("A", "♥", 12)), "Mira played A♥.");
+});
+
+test("bid status reflects public standing against the bid", () => {
+  const seat = (prediction, tricks, cardsLeft) => bidStatus({ prediction, tricks, hand: Array(cardsLeft).fill(0) });
+  assert.equal(seat(null, 0, 6), null);
+  assert.deepEqual(seat(2, 0, 6), { key: "needs", label: "Needs 2" });
+  assert.deepEqual(seat(2, 2, 3), { key: "at", label: "At bid" });
+  assert.deepEqual(seat(2, 2, 0), { key: "made", label: "Made it" });
+  assert.deepEqual(seat(2, 3, 1), { key: "over", label: "Over by 1" });
+  assert.deepEqual(seat(3, 1, 1), { key: "out", label: "Out of reach" });
+  assert.deepEqual(seat(3, 1, 2), { key: "needs", label: "Needs 2" });
+  assert.deepEqual(seat(0, 0, 4), { key: "holds", label: "Holds" });
+  assert.deepEqual(seat(0, 1, 3), { key: "fell", label: "Fell" });
+  assert.equal(mountainJustFell({ prediction: 0, tricks: 1 }), true);
+  assert.equal(mountainJustFell({ prediction: 0, tricks: 2 }), false);
+  assert.equal(mountainJustFell({ prediction: 1, tricks: 1 }), false);
 });
